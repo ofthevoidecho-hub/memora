@@ -140,18 +140,16 @@ export const ReviewSessionView: React.FC<ReviewSessionViewProps> = ({
     // Move to next card or complete
     if (currentIndex + 1 < sessionQueue.length) {
       if (isShuffleEnabled) {
-        // Pick a random remaining card index between currentIndex + 1 and sessionQueue.length - 1
-        const remainingIndices = [];
-        for (let i = currentIndex + 1; i < sessionQueue.length; i++) {
-          remainingIndices.push(i);
-        }
-        const randomIndex = remainingIndices[Math.floor(Math.random() * remainingIndices.length)];
+        // Pick a random index among unreviewed remaining cards (currentIndex + 1 to length - 1)
+        const unreviewedCount = sessionQueue.length - (currentIndex + 1);
+        const randomOffset = Math.floor(Math.random() * unreviewedCount);
+        const targetIndex = currentIndex + 1 + randomOffset;
 
-        // Swap the randomly picked card to index + 1
+        // Swap target random card to position (currentIndex + 1)
         const updatedQueue = [...sessionQueue];
         const temp = updatedQueue[currentIndex + 1];
-        updatedQueue[currentIndex + 1] = updatedQueue[randomIndex];
-        updatedQueue[randomIndex] = temp;
+        updatedQueue[currentIndex + 1] = updatedQueue[targetIndex];
+        updatedQueue[targetIndex] = temp;
 
         setSessionQueue(updatedQueue);
       }

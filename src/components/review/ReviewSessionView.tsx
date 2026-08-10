@@ -47,6 +47,8 @@ export const ReviewSessionView: React.FC<ReviewSessionViewProps> = ({
   const [sessionQueue, setSessionQueue] = useState<Card[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAnswerRevealed, setIsAnswerRevealed] = useState(false);
+  const [isShuffleEnabled, setIsShuffleEnabled] = useState(false);
+  const [originalQueue, setOriginalQueue] = useState<Card[]>([]);
   const [sessionStartTime, setSessionStartTime] = useState<number | null>(null);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [ratingCounts, setRatingCounts] = useState({ 1: 0, 2: 0, 3: 0, 4: 0 });
@@ -64,6 +66,7 @@ export const ReviewSessionView: React.FC<ReviewSessionViewProps> = ({
     const dueList = pool.filter((c) => isCardDue(c));
     // Limit max reviews according to settings
     const queue = dueList.slice(0, settings.maxReviewsPerDay || 100);
+    setOriginalQueue(queue);
     setSessionQueue(queue);
     setCurrentIndex(0);
     setIsAnswerRevealed(false);
@@ -97,6 +100,31 @@ export const ReviewSessionView: React.FC<ReviewSessionViewProps> = ({
     setIsAnswerRevealed(true);
   };
 
+  const toggleShuffleMode = () => {
+    const nextState = !isShuffleEnabled;
+    setIsShuffleEnabled(nextState);
+
+    // Get remaining cards from current index onwards
+    const remaining = sessionQueue.slice(currentIndex);
+
+    if (nextState) {
+      // Shuffle remaining cards randomly
+      const shuffledRemaining = [...remaining];
+      for (let i = shuffledRemaining.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffledRemaining[i], shuffledRemaining[j]] = [shuffledRemaining[j], shuffledRemaining[i]];
+      }
+      const newQueue = [...sessionQueue.slice(0, currentIndex), ...shuffledRemaining];
+      setSessionQueue(newQueue);
+    } else {
+      // Restore remaining cards to original order
+      const reviewedCardIds = new Set(sessionQueue.slice(0, currentIndex).map((c) => c.id));
+      const unreviewedOriginal = originalQueue.filter((c) => !reviewedCardIds.has(c.id));
+      const newQueue = [...sessionQueue.slice(0, currentIndex), ...unreviewedOriginal];
+      setSessionQueue(newQueue);
+    }
+  };
+
   const handleRatingSelect = (rating: CardRating) => {
     const currentCard = sessionQueue[currentIndex];
     if (!currentCard) return;
@@ -111,6 +139,23 @@ export const ReviewSessionView: React.FC<ReviewSessionViewProps> = ({
 
     // Move to next card or complete
     if (currentIndex + 1 < sessionQueue.length) {
+      if (isShuffleEnabled) {
+        // Pick a random remaining card index between currentIndex + 1 and sessionQueue.length - 1
+        const remainingIndices = [];
+        for (let i = currentIndex + 1; i < sessionQueue.length; i++) {
+          remainingIndices.push(i);
+        }
+        const randomIndex = remainingIndices[Math.floor(Math.random() * remainingIndices.length)];
+
+        // Swap the randomly picked card to index + 1
+        const updatedQueue = [...sessionQueue];
+        const temp = updatedQueue[currentIndex + 1];
+        updatedQueue[currentIndex + 1] = updatedQueue[randomIndex];
+        updatedQueue[randomIndex] = temp;
+
+        setSessionQueue(updatedQueue);
+      }
+
       setCurrentIndex((prev) => prev + 1);
       setIsAnswerRevealed(false);
       cardStartTimeRef.current = Date.now();
@@ -220,12 +265,17 @@ export const ReviewSessionView: React.FC<ReviewSessionViewProps> = ({
 
               <div className="flex justify-center">
                 <button
-                  onClick={handleShuffleQueue}
-                  className="px-4 py-2 rounded-xl bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-semibold flex items-center gap-2 transition-colors cursor-pointer"
-                  title="Mélanger l'ordre des cartes"
+                  type="button"
+                  onClick={toggleShuffleMode}
+                  className={`px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer ${
+                    isShuffleEnabled
+                      ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20 ring-2 ring-indigo-500'
+                      : 'bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300'
+                  }`}
+                  title={isShuffleEnabled ? "Ordre aléatoire (activé)" : "Ordre séquentiel (désactivé)"}
                 >
-                  <Shuffle className="w-3.5 h-3.5 text-indigo-500" />
-                  <span>Mélanger les cartes ({sessionQueue.length})</span>
+                  <Shuffle className={`w-3.5 h-3.5 ${isShuffleEnabled ? 'text-white' : 'text-indigo-500'}`} />
+                  <span>Mode aléatoire : {isShuffleEnabled ? 'Activé (ON)' : 'Désactivé (OFF)'}</span>
                 </button>
               </div>
             </div>
@@ -344,11 +394,16 @@ export const ReviewSessionView: React.FC<ReviewSessionViewProps> = ({
           {currentCard && (
             <>
               <button
-                onClick={handleShuffleQueue}
-                className="p-2 rounded-xl text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
-                title="Mélanger les cartes restantes"
+                type="button"
+                onClick={toggleShuffleMode}
+                className={`p-2 rounded-xl transition-all cursor-pointer ${
+                  isShuffleEnabled
+                    ? 'text-indigo-600 bg-indigo-50 dark:bg-indigo-950/60 dark:text-indigo-400 ring-2 ring-indigo-500'
+                    : 'text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800'
+                }`}
+                title={isShuffleEnabled ? "Mode aléatoire (Activé) - Cliquez pour remettre dans l'ordre" : "Mode aléatoire (Désactivé) - Cliquez pour activer l'ordre aléatoire"}
               >
-                <Shuffle className="w-4 h-4" />
+                <Shuffle className={`w-4 h-4 ${isShuffleEnabled ? 'stroke-[2.5]' : ''}`} />
               </button>
 
               <button

@@ -133,6 +133,24 @@ export function resetReviewStats() {
   });
 }
 
+export function resetDeckProgress(deckId: string) {
+  const cards = loadCards();
+  const now = new Date().toISOString();
+  const updatedCards = cards.map((card) => {
+    if (card.deckId !== deckId) return card;
+    return {
+      ...card,
+      state: 'new' as const,
+      interval: 0,
+      repetitions: 0,
+      lapses: 0,
+      dueDate: now,
+      lastReviewedAt: null,
+    };
+  });
+  saveCards(updatedCards);
+}
+
 export function resetAllData() {
   saveDecks(INITIAL_DECKS);
   saveCards(INITIAL_CARDS);

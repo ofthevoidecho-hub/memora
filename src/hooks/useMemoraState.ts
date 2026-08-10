@@ -206,6 +206,26 @@ export function useMemoraState() {
     [decks, cards]
   );
 
+  const resetDeckProgress = useCallback(
+    (deckId: string) => {
+      const now = new Date().toISOString();
+      const updatedCards = cards.map((card) => {
+        if (card.deckId !== deckId) return card;
+        return {
+          ...card,
+          state: 'new' as const,
+          interval: 0,
+          repetitions: 0,
+          lapses: 0,
+          dueDate: now,
+          lastReviewedAt: null,
+        };
+      });
+      saveCards(updatedCards);
+    },
+    [cards]
+  );
+
   // Process Card Review Rating
   const submitCardReview = useCallback(
     (cardId: string, rating: CardRating, timeSpentSeconds: number = 5) => {
@@ -321,6 +341,7 @@ export function useMemoraState() {
     addDeck,
     updateDeck,
     deleteDeck,
+    resetDeckProgress,
     submitCardReview,
     importCardsBatch,
     updateUserSettings,

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Play, Folder, Edit3, Trash2, BookOpen, Layers } from 'lucide-react';
+import { Plus, Play, Folder, Edit3, Trash2, BookOpen, Layers, RotateCcw } from 'lucide-react';
 import { ActiveTab, Card, Deck } from '../../types';
 import { getDeckStats } from '../../lib/spacedRepetition';
 import { DeckModal } from './DeckModal';
@@ -12,6 +12,7 @@ interface DecksViewProps {
   onAddDeck: (deckData: { title: string; description: string; folder: string; color: string }) => void;
   onUpdateDeck: (id: string, updates: Partial<Deck>) => void;
   onDeleteDeck: (id: string) => void;
+  onResetDeckProgress: (deckId: string) => void;
 }
 
 export const DecksView: React.FC<DecksViewProps> = ({
@@ -22,6 +23,7 @@ export const DecksView: React.FC<DecksViewProps> = ({
   onAddDeck,
   onUpdateDeck,
   onDeleteDeck,
+  onResetDeckProgress,
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [deckToEdit, setDeckToEdit] = useState<Deck | null>(null);
@@ -34,6 +36,7 @@ export const DecksView: React.FC<DecksViewProps> = ({
     selectedFolder === 'all' ? decks : decks.filter((d) => (d.folder || 'Général') === selectedFolder);
 
   const [deckToDelete, setDeckToDelete] = useState<Deck | null>(null);
+  const [deckToReset, setDeckToReset] = useState<Deck | null>(null);
 
   const handleOpenCreate = () => {
     setDeckToEdit(null);
@@ -57,6 +60,13 @@ export const DecksView: React.FC<DecksViewProps> = ({
     if (deckToDelete) {
       onDeleteDeck(deckToDelete.id);
       setDeckToDelete(null);
+    }
+  };
+
+  const confirmReset = () => {
+    if (deckToReset) {
+      onResetDeckProgress(deckToReset.id);
+      setDeckToReset(null);
     }
   };
 
@@ -148,6 +158,13 @@ export const DecksView: React.FC<DecksViewProps> = ({
                       title="Modifier le deck"
                     >
                       <Edit3 className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => setDeckToReset(deck)}
+                      className="p-1.5 rounded-lg text-neutral-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/30 transition-colors cursor-pointer"
+                      title="Réinitialiser la progression"
+                    >
+                      <RotateCcw className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => setDeckToDelete(deck)}
@@ -250,6 +267,49 @@ export const DecksView: React.FC<DecksViewProps> = ({
                 className="px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-md shadow-rose-600/20 cursor-pointer"
               >
                 Supprimer définitivement
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Confirmation Modal for Deck Reset */}
+      {deckToReset && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-neutral-900/60 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="w-full max-w-md bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-3xl shadow-2xl p-6 space-y-4">
+            <div className="flex items-center gap-3 text-amber-600">
+              <div className="p-2.5 rounded-2xl bg-amber-50 dark:bg-amber-950/40">
+                <RotateCcw className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-neutral-900 dark:text-white">
+                  Réinitialiser la progression ?
+                </h3>
+                <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                  Cette action est irréversible.
+                </p>
+              </div>
+            </div>
+
+            <p className="text-xs text-neutral-600 dark:text-neutral-300 leading-relaxed">
+              Êtes-vous sûr de vouloir réinitialiser la progression du deck <strong className="text-neutral-900 dark:text-white">"{deckToReset.title}"</strong> ?
+              Toutes les cartes reviendront à l'état initial (nouvelles).
+            </p>
+
+            <div className="pt-2 flex items-center justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setDeckToReset(null)}
+                className="px-4 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 text-xs font-semibold text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
+              >
+                Annuler
+              </button>
+              <button
+                type="button"
+                onClick={confirmReset}
+                className="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold shadow-md shadow-amber-500/20 cursor-pointer"
+              >
+                Réinitialiser
               </button>
             </div>
           </div>

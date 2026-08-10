@@ -14,6 +14,7 @@ import {
   Sparkles,
   ArrowRight,
   HelpCircle,
+  Shuffle,
 } from 'lucide-react';
 import { ActiveTab, Card, CardRating, Deck, UserSettings } from '../../types';
 import { getFormattedNextInterval, isCardDue } from '../../lib/spacedRepetition';
@@ -165,6 +166,20 @@ export const ReviewSessionView: React.FC<ReviewSessionViewProps> = ({
     return `${mins}m ${remainingSecs < 10 ? '0' : ''}${remainingSecs}s`;
   };
 
+  // Fisher-Yates shuffle queue
+  const handleShuffleQueue = () => {
+    if (sessionQueue.length <= 1) return;
+    const shuffled = [...sessionQueue];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    setSessionQueue(shuffled);
+    setCurrentIndex(0);
+    setIsAnswerRevealed(false);
+    cardStartTimeRef.current = Date.now();
+  };
+
   // --- BRIEFING SCREEN ---
   if (sessionState === 'briefing') {
     return (
@@ -187,18 +202,31 @@ export const ReviewSessionView: React.FC<ReviewSessionViewProps> = ({
           </div>
 
           {sessionQueue.length > 0 ? (
-            <div className="grid grid-cols-3 gap-3 py-4 border-y border-neutral-100 dark:border-neutral-800">
-              <div className="p-3 rounded-2xl bg-neutral-50 dark:bg-neutral-800/50">
-                <span className="block text-[10px] text-neutral-400 uppercase font-semibold">Cartes Dues</span>
-                <span className="text-xl font-bold text-amber-500">{sessionQueue.length}</span>
+            <div className="space-y-3">
+              <div className="grid grid-cols-3 gap-3 py-4 border-y border-neutral-100 dark:border-neutral-800">
+                <div className="p-3 rounded-2xl bg-neutral-50 dark:bg-neutral-800/50">
+                  <span className="block text-[10px] text-neutral-400 uppercase font-semibold">Cartes Dues</span>
+                  <span className="text-xl font-bold text-amber-500">{sessionQueue.length}</span>
+                </div>
+                <div className="p-3 rounded-2xl bg-neutral-50 dark:bg-neutral-800/50">
+                  <span className="block text-[10px] text-neutral-400 uppercase font-semibold">Nouvelles</span>
+                  <span className="text-xl font-bold text-indigo-500">{newCardsCount}</span>
+                </div>
+                <div className="p-3 rounded-2xl bg-neutral-50 dark:bg-neutral-800/50">
+                  <span className="block text-[10px] text-neutral-400 uppercase font-semibold">Durée estimée</span>
+                  <span className="text-xl font-bold text-emerald-500">~{estimatedTimeMinutes} min</span>
+                </div>
               </div>
-              <div className="p-3 rounded-2xl bg-neutral-50 dark:bg-neutral-800/50">
-                <span className="block text-[10px] text-neutral-400 uppercase font-semibold">Nouvelles</span>
-                <span className="text-xl font-bold text-indigo-500">{newCardsCount}</span>
-              </div>
-              <div className="p-3 rounded-2xl bg-neutral-50 dark:bg-neutral-800/50">
-                <span className="block text-[10px] text-neutral-400 uppercase font-semibold">Durée estimée</span>
-                <span className="text-xl font-bold text-emerald-500">~{estimatedTimeMinutes} min</span>
+
+              <div className="flex justify-center">
+                <button
+                  onClick={handleShuffleQueue}
+                  className="px-4 py-2 rounded-xl bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-semibold flex items-center gap-2 transition-colors cursor-pointer"
+                  title="Mélanger l'ordre des cartes"
+                >
+                  <Shuffle className="w-3.5 h-3.5 text-indigo-500" />
+                  <span>Mélanger les cartes ({sessionQueue.length})</span>
+                </button>
               </div>
             </div>
           ) : (
@@ -316,8 +344,16 @@ export const ReviewSessionView: React.FC<ReviewSessionViewProps> = ({
           {currentCard && (
             <>
               <button
+                onClick={handleShuffleQueue}
+                className="p-2 rounded-xl text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+                title="Mélanger les cartes restantes"
+              >
+                <Shuffle className="w-4 h-4" />
+              </button>
+
+              <button
                 onClick={() => onToggleFavorite(currentCard.id)}
-                className={`p-2 rounded-xl transition-colors ${
+                className={`p-2 rounded-xl transition-colors cursor-pointer ${
                   currentCard.favorite
                     ? 'text-amber-500 bg-amber-50 dark:bg-amber-950/40'
                     : 'text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200'

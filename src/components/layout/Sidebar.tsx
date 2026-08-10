@@ -13,8 +13,10 @@ import {
   Sparkles,
   Sun,
   Moon,
+  LogOut,
 } from 'lucide-react';
 import { ActiveTab, UserSettings } from '../../types';
+import { useUser, useClerk } from '@clerk/clerk-react';
 
 interface SidebarProps {
   activeTab: ActiveTab;
@@ -43,6 +45,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
     const nextTheme = settings.theme === 'dark' ? 'light' : 'dark';
     onUpdateSettings({ theme: nextTheme });
   };
+
+  const { user } = useUser();
+  const { signOut } = useClerk();
 
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -196,6 +201,45 @@ export const Sidebar: React.FC<SidebarProps> = ({
             )}
           </button>
         </div>
+
+        {/* User Profile & Sign Out */}
+        {user && (
+          <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-100 dark:border-neutral-800">
+            {/* Avatar */}
+            <div className="flex-shrink-0">
+              {user.imageUrl ? (
+                <img
+                  src={user.imageUrl}
+                  alt={user.fullName || 'Avatar'}
+                  className="w-8 h-8 rounded-full object-cover ring-2 ring-indigo-500/30"
+                />
+              ) : (
+                <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white text-xs font-bold">
+                  {user.firstName?.[0] ?? user.emailAddresses?.[0]?.emailAddress?.[0]?.toUpperCase() ?? 'U'}
+                </div>
+              )}
+            </div>
+
+            {/* Name & Email */}
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-semibold text-neutral-800 dark:text-neutral-100 truncate">
+                {user.fullName || user.firstName || 'Utilisateur'}
+              </p>
+              <p className="text-[10px] text-neutral-400 truncate">
+                {user.emailAddresses?.[0]?.emailAddress ?? ''}
+              </p>
+            </div>
+
+            {/* Sign Out */}
+            <button
+              onClick={() => signOut()}
+              title="Se déconnecter"
+              className="flex-shrink-0 p-1.5 rounded-lg text-neutral-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
       </div>
     </aside>
   );

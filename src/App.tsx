@@ -7,6 +7,7 @@ import { MobileNav } from './components/layout/MobileNav';
 import { CommandPalette } from './components/ui/CommandPalette';
 import { CardEditorModal } from './components/cards/CardEditorModal';
 import { DeckModal } from './components/decks/DeckModal';
+import { AuthGuard } from './components/auth/AuthGuard';
 
 import { DashboardView } from './components/dashboard/DashboardView';
 import { DecksView } from './components/decks/DecksView';
@@ -85,6 +86,7 @@ export default function App() {
   };
 
   return (
+    <AuthGuard>
     <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 flex flex-col lg:flex-row antialiased font-sans">
       {/* Desktop Navigation Sidebar */}
       <Sidebar
@@ -233,5 +235,6 @@ export default function App() {
         onSave={(deckData) => addDeck(deckData)}
       />
     </div>
+    </AuthGuard>
   );
 }

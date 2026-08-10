@@ -1,43 +1,7 @@
 import { Card, Deck, UserSettings, UserStats } from '../types';
 
 export const INITIAL_DECKS: Deck[] = [
-  {
-    id: 'deck-histoire',
-    title: 'Histoire',
-    description: 'Grands événements, relations internationales et histoire moderne du XXe siècle.',
-    folder: 'Sciences Humaines',
-    color: 'emerald',
-    icon: 'Landmark',
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: 'deck-anglais',
-    title: 'Anglais',
-    description: 'Vocabulaire avancé, idiomes, verbes à particule et expressions formelles.',
-    folder: 'Langues',
-    color: 'indigo',
-    icon: 'Languages',
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: 'deck-culture-generale',
-    title: 'Culture Générale',
-    description: 'Arts, géographie mondiale, littérature classique et découvertes scientifiques.',
-    folder: 'Général',
-    color: 'amber',
-    icon: 'Globe',
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: 'deck-traduction-militaire',
-    title: 'Traduction Militaire',
-    description: 'Terminologie de défense, stratégie, acronymes OTAN et vocabulaire tactique.',
-    folder: 'Défense & Stratégie',
-    color: 'rose',
-    icon: 'Shield',
-    createdAt: new Date().toISOString(),
-  },
-  {
+    {
     id: 'deck-armes-infanterie',
     title: 'Armes Infanterie',
     description: 'Caractéristiques, sécurité, démontage et règles d\'emploi des armes d\'infanterie.',

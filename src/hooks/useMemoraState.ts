@@ -14,7 +14,7 @@ import {
   storageEventBus,
 } from '../lib/storage';
 import { calculateNextReview, isCardDue } from '../lib/spacedRepetition';
-import { registerServiceWorker, scheduleNotification, cancelNotification } from '../lib/notifications';
+import { registerServiceWorker, scheduleNotification, cancelNotification, checkAndFireOnAppLoad } from '../lib/notifications';
 
 export function useMemoraState() {
   const [decks, setDecks] = useState<Deck[]>(loadDecks);
@@ -69,9 +69,24 @@ export function useMemoraState() {
     }
   }, [settings.theme]);
 
-  // Register SW & Sync Daily Notifications
+  // Register SW & check if notification should fire immediately on app load
   useEffect(() => {
-    registerServiceWorker();
+    const init = async () => {
+      await registerServiceWorker();
+      if (
+        (settings.notificationsEnabled || settings.telegramNotificationsEnabled) &&
+        settings.notificationTime
+      ) {
+        checkAndFireOnAppLoad(settings.notificationTime, dueCards.length, {
+          enabled: settings.telegramNotificationsEnabled,
+          token: settings.telegramBotToken,
+          chatId: settings.telegramChatId,
+        });
+      }
+    };
+    init();
+  // Only run once on mount
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {

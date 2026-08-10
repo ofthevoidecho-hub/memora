@@ -4,6 +4,9 @@
  * and scheduling of daily revision reminders.
  */
 
+const LAST_NOTIF_DATE_KEY = 'memora_last_notif_date';
+const LAST_TELEGRAM_DATE_KEY = 'memora_last_telegram_date';
+
 let swRegistration: ServiceWorkerRegistration | null = null;
 
 /**
@@ -114,6 +117,69 @@ export async function sendTestNotification(dueCount: number): Promise<void> {
       body: 'Test de notification Memora — tout fonctionne !',
       icon: '/favicon.ico',
     });
+  }
+}
+
+/**
+ * On app load: check if today's notification time has already passed and
+ * we haven't sent a notification yet today — if so, fire immediately.
+ * This makes notifications reliable even when the browser was closed.
+ *
+ * @param time  "HH:MM" string (24h), e.g. "09:00"
+ * @param dueCount  Number of due flashcards
+ * @param telegramOptions  Optional Telegram settings
+ */
+export async function checkAndFireOnAppLoad(
+  time: string,
+  dueCount: number,
+  telegramOptions?: {
+    enabled?: boolean;
+    token?: string;
+    chatId?: string;
+  }
+): Promise<void> {
+  const todayStr = new Date().toISOString().split('T')[0];
+  const now = new Date();
+  const [hours, minutes] = time.split(':').map(Number);
+  const scheduledTime = new Date();
+  scheduledTime.setHours(hours, minutes, 0, 0);
+
+  // Only fire if the scheduled time has passed today
+  if (now < scheduledTime) return;
+
+  // --- Browser notification ---
+  const lastBrowserNotifDate = localStorage.getItem(LAST_NOTIF_DATE_KEY);
+  if (
+    Notification.permission === 'granted' &&
+    lastBrowserNotifDate !== todayStr &&
+    dueCount > 0
+  ) {
+    const sw = (await navigator.serviceWorker.ready).active;
+    const title = `📚 ${dueCount} carte${dueCount > 1 ? 's' : ''} à réviser !`;
+    const body = `Tu as ${dueCount} carte${dueCount > 1 ? 's' : ''} qui t'attend${dueCount > 1 ? 'ent' : ''}. Maintiens ta série ! 🔥`;
+    if (sw) {
+      sw.postMessage({ type: 'TEST_NOTIFICATION', payload: { dueCount } });
+    } else {
+      new Notification(title, { body, icon: '/favicon.ico' });
+    }
+    localStorage.setItem(LAST_NOTIF_DATE_KEY, todayStr);
+  }
+
+  // --- Telegram notification ---
+  if (
+    telegramOptions?.enabled &&
+    telegramOptions.token &&
+    telegramOptions.chatId &&
+    dueCount > 0
+  ) {
+    const lastTelegramDate = localStorage.getItem(LAST_TELEGRAM_DATE_KEY);
+    if (lastTelegramDate !== todayStr) {
+      const text = `📚 <b>Memora — Rappel de révision</b>\n\nTu as <b>${dueCount}</b> carte${dueCount > 1 ? 's' : ''} à réviser aujourd'hui. Maintiens ta série ! 🔥`;
+      const success = await sendTelegramNotification(telegramOptions.token, telegramOptions.chatId, text);
+      if (success) {
+        localStorage.setItem(LAST_TELEGRAM_DATE_KEY, todayStr);
+      }
+    }
   }
 }
 

@@ -33,6 +33,8 @@ export const DecksView: React.FC<DecksViewProps> = ({
   const filteredDecks =
     selectedFolder === 'all' ? decks : decks.filter((d) => (d.folder || 'Général') === selectedFolder);
 
+  const [deckToDelete, setDeckToDelete] = useState<Deck | null>(null);
+
   const handleOpenCreate = () => {
     setDeckToEdit(null);
     setIsModalOpen(true);
@@ -51,6 +53,13 @@ export const DecksView: React.FC<DecksViewProps> = ({
     }
   };
 
+  const confirmDelete = () => {
+    if (deckToDelete) {
+      onDeleteDeck(deckToDelete.id);
+      setDeckToDelete(null);
+    }
+  };
+
   return (
     <div className="space-y-6 pb-12 max-w-6xl mx-auto animate-in fade-in duration-200">
       {/* Top Controls Header */}
@@ -66,7 +75,7 @@ export const DecksView: React.FC<DecksViewProps> = ({
 
         <button
           onClick={handleOpenCreate}
-          className="py-3 px-5 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md shadow-indigo-600/20 flex items-center justify-center gap-2 transition-all"
+          className="py-3 px-5 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md shadow-indigo-600/20 flex items-center justify-center gap-2 transition-all cursor-pointer"
         >
           <Plus className="w-4 h-4" />
           <span>Nouveau deck</span>
@@ -78,7 +87,7 @@ export const DecksView: React.FC<DecksViewProps> = ({
         <div className="flex items-center gap-2 overflow-x-auto pb-1">
           <button
             onClick={() => setSelectedFolder('all')}
-            className={`px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
+            className={`px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
               selectedFolder === 'all'
                 ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 shadow-xs'
                 : 'bg-white dark:bg-neutral-900 text-neutral-600 dark:text-neutral-400 border border-neutral-200 dark:border-neutral-800 hover:bg-neutral-50'
@@ -93,7 +102,7 @@ export const DecksView: React.FC<DecksViewProps> = ({
               <button
                 key={folderName}
                 onClick={() => setSelectedFolder(folderName)}
-                className={`px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 ${
+                className={`px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 cursor-pointer ${
                   selectedFolder === folderName
                     ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 shadow-xs'
                     : 'bg-white dark:bg-neutral-900 text-neutral-600 dark:text-neutral-400 border border-neutral-200 dark:border-neutral-800 hover:bg-neutral-50'
@@ -135,18 +144,14 @@ export const DecksView: React.FC<DecksViewProps> = ({
                   <div className="flex items-center gap-1">
                     <button
                       onClick={() => handleOpenEdit(deck)}
-                      className="p-1.5 rounded-lg text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                      className="p-1.5 rounded-lg text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
                       title="Modifier le deck"
                     >
                       <Edit3 className="w-4 h-4" />
                     </button>
                     <button
-                      onClick={() => {
-                        if (confirm(`Voulez-vous vraiment supprimer le deck "${deck.title}" et ses cartes ?`)) {
-                          onDeleteDeck(deck.id);
-                        }
-                      }}
-                      className="p-1.5 rounded-lg text-neutral-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors"
+                      onClick={() => setDeckToDelete(deck)}
+                      className="p-1.5 rounded-lg text-neutral-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors cursor-pointer"
                       title="Supprimer le deck"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -190,7 +195,7 @@ export const DecksView: React.FC<DecksViewProps> = ({
                     onSelectDeckForReview(deck.id);
                     setActiveTab('review');
                   }}
-                  className="w-full py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-xs transition-all flex items-center justify-center gap-2"
+                  className="w-full py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <Play className="w-3.5 h-3.5 fill-white" />
                   <span>Réviser ce deck ({stats.due})</span>
@@ -207,6 +212,49 @@ export const DecksView: React.FC<DecksViewProps> = ({
         deckToEdit={deckToEdit}
         onSave={handleSaveDeck}
       />
+
+      {/* Confirmation Modal for Deck Deletion */}
+      {deckToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-neutral-900/60 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="w-full max-w-md bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-3xl shadow-2xl p-6 space-y-4">
+            <div className="flex items-center gap-3 text-rose-600">
+              <div className="p-2.5 rounded-2xl bg-rose-50 dark:bg-rose-950/40">
+                <Trash2 className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-neutral-900 dark:text-white">
+                  Supprimer le deck ?
+                </h3>
+                <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                  Cette action est irréversible.
+                </p>
+              </div>
+            </div>
+
+            <p className="text-xs text-neutral-600 dark:text-neutral-300 leading-relaxed">
+              Êtes-vous sûr de vouloir supprimer <strong className="text-neutral-900 dark:text-white">"{deckToDelete.title}"</strong> ? 
+              Toutes les cartes associées à ce deck seront également supprimées.
+            </p>
+
+            <div className="pt-2 flex items-center justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setDeckToDelete(null)}
+                className="px-4 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 text-xs font-semibold text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
+              >
+                Annuler
+              </button>
+              <button
+                type="button"
+                onClick={confirmDelete}
+                className="px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-md shadow-rose-600/20 cursor-pointer"
+              >
+                Supprimer définitivement
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

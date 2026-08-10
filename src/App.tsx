@@ -37,6 +37,7 @@ export default function App() {
     submitCardReview,
     importCardsBatch,
     updateUserSettings,
+    resetReviewStats,
   } = useMemoraState();
 
   const [activeTab, setActiveTab] = useState<ActiveTab>('dashboard');
@@ -183,7 +184,11 @@ export default function App() {
           {activeTab === 'statistics' && <StatisticsView cards={cards} stats={stats} />}
 
           {activeTab === 'settings' && (
-            <SettingsView settings={settings} onUpdateSettings={updateUserSettings} />
+            <SettingsView
+              settings={settings}
+              onUpdateSettings={updateUserSettings}
+              onResetStats={resetReviewStats}
+            />
           )}
         </main>
       </div>

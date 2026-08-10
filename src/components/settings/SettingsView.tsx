@@ -1,19 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, Moon, Sun, Monitor, RefreshCw, Trash2, Key, Sliders, Shield, Bell, BellOff, Clock, Send, Info } from 'lucide-react';
+import { Settings, Moon, Sun, Monitor, RefreshCw, Trash2, Key, Sliders, Shield, Bell, BellOff, Clock, Send, Info, RotateCcw } from 'lucide-react';
 import { UserSettings } from '../../types';
-import { resetAllData } from '../../lib/storage';
+import { resetAllData, resetReviewStats } from '../../lib/storage';
 import { requestNotificationPermission, getNotificationPermission, sendTestNotification, sendTelegramNotification } from '../../lib/notifications';
 
 interface SettingsViewProps {
   settings: UserSettings;
   onUpdateSettings: (updates: Partial<UserSettings>) => void;
+  onResetStats?: () => void;
 }
 
-export const SettingsView: React.FC<SettingsViewProps> = ({ settings, onUpdateSettings }) => {
+export const SettingsView: React.FC<SettingsViewProps> = ({ settings, onUpdateSettings, onResetStats }) => {
   const [permissionState, setPermissionState] = useState<NotificationPermission>(getNotificationPermission());
   const [testSentMessage, setTestSentMessage] = useState(false);
   const [telegramTestSentMessage, setTelegramTestSentMessage] = useState(false);
   const [telegramTestError, setTelegramTestError] = useState<string | null>(null);
+  const [isResetStatsModalOpen, setIsResetStatsModalOpen] = useState(false);
+  const [statsResetSuccess, setStatsResetSuccess] = useState(false);
 
   useEffect(() => {
     setPermissionState(getNotificationPermission());
@@ -418,10 +421,39 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, onUpdateSe
       </div>
 
       {/* Data Management Section */}
+      <div className="p-6 rounded-3xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-xs space-y-4">
+        <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400">
+          <RefreshCw className="w-5 h-5" />
+          <h3 className="font-bold text-base text-neutral-900 dark:text-white">Réinitialisation des Statistiques de Révision</h3>
+        </div>
+
+        <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed">
+          Remet à zéro le compteur global de cartes révisées, le temps d'étude, la série d'assiduité (streak) et l'historique des révisions sans supprimer vos cartes ni vos decks.
+        </p>
+
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => setIsResetStatsModalOpen(true)}
+            className="py-2.5 px-4 rounded-xl bg-amber-50 dark:bg-amber-950/50 hover:bg-amber-100 text-amber-700 dark:text-amber-300 font-bold text-xs border border-amber-200 dark:border-amber-900 flex items-center gap-2 transition-colors cursor-pointer"
+          >
+            <RotateCcw className="w-4 h-4" />
+            <span>Réinitialiser le compteur de révisions</span>
+          </button>
+
+          {statsResetSuccess && (
+            <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 animate-in fade-in">
+              ✓ Compteur réinitialisé avec succès !
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Danger Zone */}
       <div className="p-6 rounded-3xl bg-white dark:bg-neutral-900 border border-rose-200 dark:border-rose-950 shadow-xs space-y-4">
         <div className="flex items-center gap-2 text-rose-600 dark:text-rose-400">
           <Trash2 className="w-5 h-5" />
-          <h3 className="font-bold text-base">Gestion des Données & Réinitialisation</h3>
+          <h3 className="font-bold text-base">Gestion des Données & Réinitialisation Globale</h3>
         </div>
 
         <p className="text-xs text-neutral-500 dark:text-neutral-400">
@@ -430,12 +462,63 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, onUpdateSe
 
         <button
           onClick={handleReset}
-          className="py-2.5 px-4 rounded-xl bg-rose-50 dark:bg-rose-950/50 hover:bg-rose-100 text-rose-600 dark:text-rose-400 font-bold text-xs border border-rose-200 dark:border-rose-900 flex items-center gap-2 transition-colors"
+          className="py-2.5 px-4 rounded-xl bg-rose-50 dark:bg-rose-950/50 hover:bg-rose-100 text-rose-600 dark:text-rose-400 font-bold text-xs border border-rose-200 dark:border-rose-900 flex items-center gap-2 transition-colors cursor-pointer"
         >
           <RefreshCw className="w-4 h-4" />
-          <span>Réinitialiser les données de démonstration</span>
+          <span>Réinitialiser toutes les données (Demo)</span>
         </button>
       </div>
+
+      {/* Modal Confirmation Reset Stats */}
+      {isResetStatsModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-neutral-900/60 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="w-full max-w-md bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-3xl shadow-2xl p-6 space-y-4">
+            <div className="flex items-center gap-3 text-amber-600">
+              <div className="p-2.5 rounded-2xl bg-amber-50 dark:bg-amber-950/40">
+                <RotateCcw className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-neutral-900 dark:text-white">
+                  Réinitialiser le compteur ?
+                </h3>
+                <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                  Cette action remettra à zéro vos statistiques d'étude.
+                </p>
+              </div>
+            </div>
+
+            <p className="text-xs text-neutral-600 dark:text-neutral-300 leading-relaxed">
+              Vos cartes et decks seront conservés intacts, mais le total des cartes révisées, le temps passé et votre série de jours d'étude seront remis à 0.
+            </p>
+
+            <div className="pt-2 flex items-center justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setIsResetStatsModalOpen(false)}
+                className="px-4 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 text-xs font-semibold text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
+              >
+                Annuler
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  if (onResetStats) {
+                    onResetStats();
+                  } else {
+                    resetReviewStats();
+                  }
+                  setIsResetStatsModalOpen(false);
+                  setStatsResetSuccess(true);
+                  setTimeout(() => setStatsResetSuccess(false), 4000);
+                }}
+                className="px-5 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold shadow-md shadow-amber-600/20 cursor-pointer"
+              >
+                Réinitialiser les statistiques
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

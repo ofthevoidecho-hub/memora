@@ -11,6 +11,7 @@ import {
   saveReviewLogs,
   saveSettings,
   saveStats,
+  resetReviewStats as storageResetReviewStats,
   storageEventBus,
 } from '../lib/storage';
 import { calculateNextReview, isCardDue } from '../lib/spacedRepetition';
@@ -323,5 +324,6 @@ export function useMemoraState() {
     submitCardReview,
     importCardsBatch,
     updateUserSettings,
+    resetReviewStats: storageResetReviewStats,
   };
 }

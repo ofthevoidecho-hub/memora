@@ -122,6 +122,17 @@ export function saveStats(stats: UserStats) {
   storageEventBus.dispatchEvent(new Event('stats_updated'));
 }
 
+export function resetReviewStats() {
+  saveReviewLogs([]);
+  saveStats({
+    totalReviewsCount: 0,
+    totalTimeSpentSeconds: 0,
+    streak: 0,
+    lastActiveDate: null,
+    historyLog: {},
+  });
+}
+
 export function resetAllData() {
   saveDecks(INITIAL_DECKS);
   saveCards(INITIAL_CARDS);

@@ -34,6 +34,7 @@ export default function App() {
     addDeck,
     updateDeck,
     deleteDeck,
+    resetDeckProgress,
     submitCardReview,
     importCardsBatch,
     updateUserSettings,
@@ -141,6 +142,7 @@ export default function App() {
               onAddDeck={addDeck}
               onUpdateDeck={updateDeck}
               onDeleteDeck={deleteDeck}
+              onResetDeckProgress={resetDeckProgress}
             />
           )}
 

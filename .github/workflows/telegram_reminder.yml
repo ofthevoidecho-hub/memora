@@ -1,0 +1,28 @@
+name: Daily Telegram Reminder
+
+on:
+  schedule:
+    # Trigger every day at 09:00 UTC (Adjust if needed)
+    - cron: '0 9 * * *'
+  workflow_dispatch: # Allows manual trigger from GitHub Actions tab
+
+jobs:
+  send-telegram-reminder:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Telegram Notification
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          if [ -z "$TELEGRAM_BOT_TOKEN" ] || [ -z "$TELEGRAM_CHAT_ID" ]; then
+            echo "Error: Secrets TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID are not set."
+            exit 1
+          fi
+          
+          MESSAGE="📚 <b>Memora — Rappel quotidien</b>%0A%0AC'est l'heure de tes révisions quotidiennes ! N'oublie pas de vérifier tes cartes aujourd'hui pour maintenir ta série. 🔥"
+          
+          curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            -d "chat_id=${TELEGRAM_CHAT_ID}" \
+            -d "text=${MESSAGE}" \
+            -d "parse_mode=HTML"

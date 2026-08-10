@@ -23,6 +23,12 @@ export function useMemoraState() {
   const [settings, setSettings] = useState<UserSettings>(loadSettings);
   const [stats, setStats] = useState<UserStats>(loadStats);
 
+  // Computed helper counters
+  const dueCards = cards.filter((c) => isCardDue(c));
+  const difficultCards = cards.filter((c) => c.lapses > 1 || c.difficulty >= 7);
+  const favoriteCards = cards.filter((c) => c.favorite);
+  const learnedCards = cards.filter((c) => c.state === 'review' && c.interval >= 7);
+
   // Sync state when storage updates
   useEffect(() => {
     const handleUpdate = () => {
@@ -269,12 +275,6 @@ export function useMemoraState() {
     },
     [settings]
   );
-
-  // Computed helper counters
-  const dueCards = cards.filter((c) => isCardDue(c));
-  const difficultCards = cards.filter((c) => c.lapses > 1 || c.difficulty >= 7);
-  const favoriteCards = cards.filter((c) => c.favorite);
-  const learnedCards = cards.filter((c) => c.state === 'review' && c.interval >= 7);
 
   return {
     decks,

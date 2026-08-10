@@ -64,14 +64,24 @@ export const ReviewSessionView: React.FC<ReviewSessionViewProps> = ({
       pool = cards.filter((c) => c.deckId === targetDeckId);
     }
     const dueList = pool.filter((c) => isCardDue(c));
-    // Limit max reviews according to settings
     const queue = dueList.slice(0, settings.maxReviewsPerDay || 100);
     setOriginalQueue(queue);
-    setSessionQueue(queue);
+
+    if (isShuffleEnabled) {
+      const shuffled = [...queue];
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+      setSessionQueue(shuffled);
+    } else {
+      setSessionQueue(queue);
+    }
+
     setCurrentIndex(0);
     setIsAnswerRevealed(false);
     setRatingCounts({ 1: 0, 2: 0, 3: 0, 4: 0 });
-  }, [cards, targetDeckId, settings.maxReviewsPerDay]);
+  }, [cards, targetDeckId, settings.maxReviewsPerDay, isShuffleEnabled]);
 
   useEffect(() => {
     prepareQueue();
@@ -101,28 +111,30 @@ export const ReviewSessionView: React.FC<ReviewSessionViewProps> = ({
   };
 
   const toggleShuffleMode = () => {
-    const nextState = !isShuffleEnabled;
-    setIsShuffleEnabled(nextState);
+    setIsShuffleEnabled((prev) => {
+      const nextState = !prev;
+      setSessionQueue((currentQueue) => {
+        // Remaining unreviewed cards from currentIndex onwards
+        const reviewed = currentQueue.slice(0, currentIndex);
+        const unreviewed = currentQueue.slice(currentIndex);
 
-    // Get remaining cards from current index onwards
-    const remaining = sessionQueue.slice(currentIndex);
-
-    if (nextState) {
-      // Shuffle remaining cards randomly
-      const shuffledRemaining = [...remaining];
-      for (let i = shuffledRemaining.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [shuffledRemaining[i], shuffledRemaining[j]] = [shuffledRemaining[j], shuffledRemaining[i]];
-      }
-      const newQueue = [...sessionQueue.slice(0, currentIndex), ...shuffledRemaining];
-      setSessionQueue(newQueue);
-    } else {
-      // Restore remaining cards to original order
-      const reviewedCardIds = new Set(sessionQueue.slice(0, currentIndex).map((c) => c.id));
-      const unreviewedOriginal = originalQueue.filter((c) => !reviewedCardIds.has(c.id));
-      const newQueue = [...sessionQueue.slice(0, currentIndex), ...unreviewedOriginal];
-      setSessionQueue(newQueue);
-    }
+        if (nextState) {
+          // Shuffle unreviewed cards
+          const shuffledUnreviewed = [...unreviewed];
+          for (let i = shuffledUnreviewed.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffledUnreviewed[i], shuffledUnreviewed[j]] = [shuffledUnreviewed[j], shuffledUnreviewed[i]];
+          }
+          return [...reviewed, ...shuffledUnreviewed];
+        } else {
+          // Restore unreviewed cards to original order
+          const reviewedIds = new Set(reviewed.map((c) => c.id));
+          const originalUnreviewed = originalQueue.filter((c) => !reviewedIds.has(c.id));
+          return [...reviewed, ...originalUnreviewed];
+        }
+      });
+      return nextState;
+    });
   };
 
   const handleRatingSelect = (rating: CardRating) => {
@@ -140,18 +152,19 @@ export const ReviewSessionView: React.FC<ReviewSessionViewProps> = ({
     // Move to next card or complete
     if (currentIndex + 1 < sessionQueue.length) {
       if (isShuffleEnabled) {
-        // Pick a random index among unreviewed remaining cards (currentIndex + 1 to length - 1)
-        const unreviewedCount = sessionQueue.length - (currentIndex + 1);
-        const randomOffset = Math.floor(Math.random() * unreviewedCount);
+        // Pick a random remaining card from (currentIndex + 1) to (sessionQueue.length - 1)
+        const remainingCount = sessionQueue.length - (currentIndex + 1);
+        const randomOffset = Math.floor(Math.random() * remainingCount);
         const targetIndex = currentIndex + 1 + randomOffset;
 
-        // Swap target random card to position (currentIndex + 1)
-        const updatedQueue = [...sessionQueue];
-        const temp = updatedQueue[currentIndex + 1];
-        updatedQueue[currentIndex + 1] = updatedQueue[targetIndex];
-        updatedQueue[targetIndex] = temp;
-
-        setSessionQueue(updatedQueue);
+        // Swap picked random card into position (currentIndex + 1)
+        setSessionQueue((prevQueue) => {
+          const newQ = [...prevQueue];
+          const temp = newQ[currentIndex + 1];
+          newQ[currentIndex + 1] = newQ[targetIndex];
+          newQ[targetIndex] = temp;
+          return newQ;
+        });
       }
 
       setCurrentIndex((prev) => prev + 1);

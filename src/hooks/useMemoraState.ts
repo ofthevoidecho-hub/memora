@@ -75,12 +75,23 @@ export function useMemoraState() {
   }, []);
 
   useEffect(() => {
-    if (settings.notificationsEnabled && settings.notificationTime) {
-      scheduleNotification(settings.notificationTime, dueCards.length);
+    if ((settings.notificationsEnabled || settings.telegramNotificationsEnabled) && settings.notificationTime) {
+      scheduleNotification(settings.notificationTime, dueCards.length, {
+        enabled: settings.telegramNotificationsEnabled,
+        token: settings.telegramBotToken,
+        chatId: settings.telegramChatId,
+      });
     } else {
       cancelNotification();
     }
-  }, [settings.notificationsEnabled, settings.notificationTime, dueCards.length]);
+  }, [
+    settings.notificationsEnabled,
+    settings.telegramNotificationsEnabled,
+    settings.telegramBotToken,
+    settings.telegramChatId,
+    settings.notificationTime,
+    dueCards.length,
+  ]);
 
   // Card CRUD Operations
   const addCard = useCallback(

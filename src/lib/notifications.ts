@@ -52,7 +52,15 @@ export function getNotificationPermission(): NotificationPermission {
  * @param time  "HH:MM" string (24h), e.g. "09:00"
  * @param dueCount  Number of due cards at scheduling time
  */
-export async function scheduleNotification(time: string, dueCount: number): Promise<void> {
+export async function scheduleNotification(
+  time: string,
+  dueCount: number,
+  telegramOptions?: {
+    enabled?: boolean;
+    token?: string;
+    chatId?: string;
+  }
+): Promise<void> {
   const reg = await getSWRegistration();
   if (!reg || !reg.active) {
     // Fallback: wait for SW to become active
@@ -66,7 +74,16 @@ export async function scheduleNotification(time: string, dueCount: number): Prom
     return;
   }
 
-  sw.postMessage({ type: 'SCHEDULE_REMINDER', payload: { time, dueCount } });
+  sw.postMessage({
+    type: 'SCHEDULE_REMINDER',
+    payload: {
+      time,
+      dueCount,
+      telegramNotificationsEnabled: telegramOptions?.enabled,
+      telegramBotToken: telegramOptions?.token,
+      telegramChatId: telegramOptions?.chatId,
+    },
+  });
 }
 
 /**
@@ -97,5 +114,28 @@ export async function sendTestNotification(dueCount: number): Promise<void> {
       body: 'Test de notification Memora — tout fonctionne !',
       icon: '/favicon.ico',
     });
+  }
+}
+
+/**
+ * Sends a notification directly to a Telegram chat via custom bot token.
+ */
+export async function sendTelegramNotification(token: string, chatId: string, text: string): Promise<boolean> {
+  if (!token || !chatId) return false;
+  try {
+    const url = `https://api.telegram.org/bot${token}/sendMessage`;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: chatId,
+        text: text,
+        parse_mode: 'HTML',
+      }),
+    });
+    return response.ok;
+  } catch (err) {
+    console.error('[Memora Telegram] Failed to send notification:', err);
+    return false;
   }
 }

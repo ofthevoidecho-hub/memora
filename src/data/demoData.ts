@@ -341,6 +341,9 @@ export const INITIAL_SETTINGS: UserSettings = {
   dailyGoal: 25,
   notificationsEnabled: false,
   notificationTime: '09:00',
+  telegramBotToken: '',
+  telegramChatId: '',
+  telegramNotificationsEnabled: false,
 };
 
 export const INITIAL_STATS: UserStats = {

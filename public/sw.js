@@ -17,9 +17,8 @@ self.addEventListener('message', (event) => {
   const { type, payload } = event.data || {};
 
   if (type === 'SCHEDULE_REMINDER') {
-    // payload: { time: "09:00", dueCount: 12 }
     clearScheduledReminder();
-    scheduleReminder(payload.time, payload.dueCount);
+    scheduleReminder(payload);
   }
 
   if (type === 'CANCEL_REMINDER') {
@@ -38,13 +37,34 @@ function clearScheduledReminder() {
   }
 }
 
-function scheduleReminder(timeStr, dueCount) {
-  const msUntilFire = getMsUntilTime(timeStr);
+function scheduleReminder(payload) {
+  const { time, dueCount, telegramBotToken, telegramChatId, telegramNotificationsEnabled } = payload;
+  const msUntilFire = getMsUntilTime(time);
   scheduledTimerId = setTimeout(() => {
     fireNotification(dueCount);
+    if (telegramNotificationsEnabled && telegramBotToken && telegramChatId) {
+      fireTelegramNotification(telegramBotToken, telegramChatId, dueCount);
+    }
     // Re-schedule for next day
-    scheduledTimerId = setTimeout(() => scheduleReminder(timeStr, dueCount), 24 * 60 * 60 * 1000);
+    scheduledTimerId = setTimeout(() => scheduleReminder(payload), 24 * 60 * 60 * 1000);
   }, msUntilFire);
+}
+
+function fireTelegramNotification(token, chatId, dueCount) {
+  const text = dueCount > 0
+    ? `📚 <b>Memora — Rappel de révision</b>\n\nTu as <b>${dueCount}</b> carte${dueCount > 1 ? 's' : ''} à réviser aujourd'hui. Maintiens ta série ! 🔥`
+    : `📚 <b>Memora — Rappel de révision</b>\n\nC'est l'heure de tes révisions quotidiennes !`;
+
+  const url = `https://api.telegram.org/bot${token}/sendMessage`;
+  fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      chat_id: chatId,
+      text: text,
+      parse_mode: 'HTML',
+    }),
+  }).catch(err => console.error('[SW Telegram] Error sending notification:', err));
 }
 
 function getMsUntilTime(timeStr) {

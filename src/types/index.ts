@@ -54,6 +54,9 @@ export interface UserSettings {
   dailyGoal: number; // target cards per day
   notificationsEnabled: boolean;
   notificationTime: string; // "HH:MM" 24h format, e.g. "09:00"
+  telegramBotToken?: string;
+  telegramChatId?: string;
+  telegramNotificationsEnabled?: boolean;
 }
 
 export interface UserStats {

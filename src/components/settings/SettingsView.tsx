@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, Moon, Sun, Monitor, RefreshCw, Trash2, Key, Sliders, Shield, Bell, BellOff, Clock, Send } from 'lucide-react';
+import { Settings, Moon, Sun, Monitor, RefreshCw, Trash2, Key, Sliders, Shield, Bell, BellOff, Clock, Send, Info } from 'lucide-react';
 import { UserSettings } from '../../types';
 import { resetAllData } from '../../lib/storage';
-import { requestNotificationPermission, getNotificationPermission, sendTestNotification } from '../../lib/notifications';
+import { requestNotificationPermission, getNotificationPermission, sendTestNotification, sendTelegramNotification } from '../../lib/notifications';
 
 interface SettingsViewProps {
   settings: UserSettings;
@@ -12,6 +12,8 @@ interface SettingsViewProps {
 export const SettingsView: React.FC<SettingsViewProps> = ({ settings, onUpdateSettings }) => {
   const [permissionState, setPermissionState] = useState<NotificationPermission>(getNotificationPermission());
   const [testSentMessage, setTestSentMessage] = useState(false);
+  const [telegramTestSentMessage, setTelegramTestSentMessage] = useState(false);
+  const [telegramTestError, setTelegramTestError] = useState<string | null>(null);
 
   useEffect(() => {
     setPermissionState(getNotificationPermission());
@@ -41,6 +43,29 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, onUpdateSe
     await sendTestNotification(5);
     setTestSentMessage(true);
     setTimeout(() => setTestSentMessage(false), 3000);
+  };
+
+  const handleTestTelegramNotification = async () => {
+    const token = settings.telegramBotToken;
+    const chatId = settings.telegramChatId;
+    if (!token || !chatId) {
+      setTelegramTestError('Veuillez renseigner le Token de Bot et le Chat ID.');
+      setTimeout(() => setTelegramTestError(null), 4000);
+      return;
+    }
+    setTelegramTestError(null);
+    const success = await sendTelegramNotification(
+      token,
+      chatId,
+      `📚 <b>Test Memora</b>\n\nFélicitations ! Vos notifications Telegram sont parfaitement configurées. 🔥`
+    );
+    if (success) {
+      setTelegramTestSentMessage(true);
+      setTimeout(() => setTelegramTestSentMessage(false), 4000);
+    } else {
+      setTelegramTestError('Erreur d\'envoi. Vérifiez le token, le Chat ID ou si vous avez lancé le bot.');
+      setTimeout(() => setTelegramTestError(null), 5000);
+    }
   };
 
   const handleReset = () => {
@@ -133,6 +158,92 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, onUpdateSe
             </div>
           )}
         </div>
+
+          {/* Telegram Notifications */}
+          <div className="pt-4 border-t border-neutral-100 dark:border-neutral-800 space-y-4">
+            <div className="flex items-center justify-between p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-200 dark:border-neutral-800">
+              <div className="space-y-0.5">
+                <span className="text-xs font-bold text-neutral-900 dark:text-white block">
+                  Rappels Telegram (Mobile)
+                </span>
+                <span className="text-[11px] text-neutral-500 dark:text-neutral-400 block">
+                  Recevez des rappels quotidiens directement sur votre téléphone via un bot Telegram personnalisé.
+                </span>
+              </div>
+              <button
+                onClick={() => onUpdateSettings({ telegramNotificationsEnabled: !settings.telegramNotificationsEnabled })}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                  settings.telegramNotificationsEnabled ? 'bg-indigo-600' : 'bg-neutral-300 dark:bg-neutral-700'
+                }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    settings.telegramNotificationsEnabled ? 'translate-x-6' : 'translate-x-1'
+                  }`}
+                />
+              </button>
+            </div>
+
+            {settings.telegramNotificationsEnabled && (
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
+                      Token de Bot Telegram :
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Ex: 123456789:ABCdefGh..."
+                      value={settings.telegramBotToken || ''}
+                      onChange={(e) => onUpdateSettings({ telegramBotToken: e.target.value })}
+                      className="w-full px-4 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
+                      ID de Chat Telegram :
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Ex: 987654321"
+                      value={settings.telegramChatId || ''}
+                      onChange={(e) => onUpdateSettings({ telegramChatId: e.target.value })}
+                      className="w-full px-4 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
+                  <div className="text-xs text-rose-600 dark:text-rose-400">
+                    {telegramTestError && <span>⚠️ {telegramTestError}</span>}
+                  </div>
+                  <button
+                    onClick={handleTestTelegramNotification}
+                    className="py-2.5 px-6 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 hover:bg-indigo-100 text-indigo-700 dark:text-indigo-300 font-bold text-xs border border-indigo-200 dark:border-indigo-800 flex items-center justify-center gap-2 transition-colors self-end"
+                  >
+                    <Send className="w-4 h-4" />
+                    <span>{telegramTestSentMessage ? 'Message envoyé !' : 'Tester Telegram'}</span>
+                  </button>
+                </div>
+
+                {/* Setup Instructions Guide */}
+                <div className="p-4 rounded-2xl bg-indigo-50/50 dark:bg-indigo-950/10 border border-indigo-100 dark:border-indigo-950/30 space-y-3">
+                  <div className="flex items-center gap-2 text-indigo-900 dark:text-indigo-300 font-bold text-xs">
+                    <Info className="w-4 h-4" />
+                    Comment configurer votre Bot Telegram :
+                  </div>
+                  <ol className="list-decimal pl-5 text-[11px] text-neutral-600 dark:text-neutral-400 space-y-1.5 leading-relaxed">
+                    <li>Recherchez le contact officiel <b className="text-indigo-600 dark:text-indigo-400">@BotFather</b> sur Telegram.</li>
+                    <li>Envoyez la commande <code>/newbot</code> et suivez les étapes pour nommer votre bot.</li>
+                    <li>Copiez le token API fourni (ex: <code>123456789:ABCdefGh...</code>) et collez-le dans le champ ci-dessus.</li>
+                    <li>Recherchez votre bot créé sur Telegram et envoyez-lui la commande <code>/start</code>.</li>
+                    <li>Recherchez le contact <b className="text-indigo-600 dark:text-indigo-400">@userinfobot</b> sur Telegram et envoyez-lui un message pour récupérer votre ID numérique personnel (Chat ID), puis collez-le ci-dessus.</li>
+                  </ol>
+                </div>
+              </div>
+            )}
+          </div>
       </div>
 
       {/* Review Limits Section */}

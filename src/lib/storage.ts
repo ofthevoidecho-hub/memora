@@ -9,6 +9,75 @@ const STORAGE_KEYS = {
   STATS: 'memora_stats_v1',
 };
 
+// ---------------------------------------------------------------------------
+// IndexedDB sync — allows the Service Worker to read card data even when
+// the browser tab is closed, to compute the real due count at notification time.
+// ---------------------------------------------------------------------------
+const IDB_NAME = 'memora_idb';
+const IDB_VERSION = 1;
+const IDB_STORE_CARDS = 'cards';
+const IDB_STORE_META = 'meta';
+
+function openMemoraDB(): Promise<IDBDatabase> {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(IDB_NAME, IDB_VERSION);
+    req.onupgradeneeded = (e) => {
+      const db = (e.target as IDBOpenDBRequest).result;
+      if (!db.objectStoreNames.contains(IDB_STORE_CARDS)) {
+        db.createObjectStore(IDB_STORE_CARDS, { keyPath: 'id' });
+      }
+      if (!db.objectStoreNames.contains(IDB_STORE_META)) {
+        db.createObjectStore(IDB_STORE_META);
+      }
+    };
+    req.onsuccess = (e) => resolve((e.target as IDBOpenDBRequest).result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+/**
+ * Sync all cards + notification settings to IndexedDB.
+ * Called after every saveCards() and saveSettings().
+ * The Service Worker reads this data to calculate the real dueCount.
+ */
+export async function syncToIndexedDB(cards: Card[], settings?: UserSettings): Promise<void> {
+  try {
+    const db = await openMemoraDB();
+
+    // Write all cards
+    await new Promise<void>((resolve, reject) => {
+      const tx = db.transaction(IDB_STORE_CARDS, 'readwrite');
+      const store = tx.objectStore(IDB_STORE_CARDS);
+      store.clear();
+      for (const card of cards) {
+        store.put(card);
+      }
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error);
+    });
+
+    // Write notification meta if provided
+    if (settings) {
+      await new Promise<void>((resolve, reject) => {
+        const tx = db.transaction(IDB_STORE_META, 'readwrite');
+        const store = tx.objectStore(IDB_STORE_META);
+        store.put(settings.notificationTime || '09:00', 'notificationTime');
+        store.put(settings.notificationsEnabled ? 1 : 0, 'notificationsEnabled');
+        store.put(settings.telegramNotificationsEnabled ? 1 : 0, 'telegramEnabled');
+        store.put(settings.telegramBotToken || '', 'telegramBotToken');
+        store.put(settings.telegramChatId || '', 'telegramChatId');
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      });
+    }
+
+    db.close();
+  } catch (err) {
+    // Non-blocking: IndexedDB sync failure should not break the app
+    console.warn('[Memora IDB] Sync failed:', err);
+  }
+}
+
 // Event emitter target for reactivity across components
 export const storageEventBus = new EventTarget();
 
@@ -70,6 +139,8 @@ export function loadCards(): Card[] {
 export function saveCards(cards: Card[]) {
   localStorage.setItem(STORAGE_KEYS.CARDS, JSON.stringify(cards));
   storageEventBus.dispatchEvent(new Event('cards_updated'));
+  // Sync to IndexedDB so the SW can read the real dueCount at notification time
+  syncToIndexedDB(cards).catch(() => {});
 }
 
 export function loadReviewLogs(): ReviewLog[] {
@@ -102,6 +173,9 @@ export function loadSettings(): UserSettings {
 export function saveSettings(settings: UserSettings) {
   localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(settings));
   storageEventBus.dispatchEvent(new Event('settings_updated'));
+  // Sync notification settings to IndexedDB for the SW
+  const cards = loadCards();
+  syncToIndexedDB(cards, settings).catch(() => {});
 }
 
 export function loadStats(): UserStats {

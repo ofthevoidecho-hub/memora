@@ -53,7 +53,7 @@ export function getNotificationPermission(): NotificationPermission {
 /**
  * Schedule a daily reminder notification at the given time.
  * @param time  "HH:MM" string (24h), e.g. "09:00"
- * @param dueCount  Number of due cards at scheduling time
+ * @param dueCount  Number of due cards at scheduling time (SW will recompute from IDB at fire time)
  */
 export async function scheduleNotification(
   time: string,

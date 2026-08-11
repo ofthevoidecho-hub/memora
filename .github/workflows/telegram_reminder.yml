@@ -2,27 +2,67 @@ name: Daily Telegram Reminder
 
 on:
   schedule:
-    # Trigger every day at 10:00 UTC
-    - cron: '0 10 * * *'
+    # Trigger every day at 09:00 UTC (ajuste selon ton fuseau horaire)
+    - cron: '0 9 * * *'
   workflow_dispatch: # Allows manual trigger from GitHub Actions tab
 
 jobs:
   send-telegram-reminder:
     runs-on: ubuntu-latest
     steps:
-      - name: Send Telegram Notification
+      - name: Send Telegram Notification with Inline Button
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          APP_URL: ${{ secrets.APP_URL || 'https://memora.vercel.app' }}
         run: |
           if [ -z "$TELEGRAM_BOT_TOKEN" ] || [ -z "$TELEGRAM_CHAT_ID" ]; then
             echo "Error: Secrets TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID are not set."
+            echo "Go to your GitHub repo → Settings → Secrets and variables → Actions"
+            echo "Add: TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID"
             exit 1
           fi
-          
-          MESSAGE="📚 <b>Memora — Rappel quotidien</b>%0A%0AC'est l'heure de tes révisions quotidiennes ! N'oublie pas de vérifier tes cartes aujourd'hui pour maintenir ta série. 🔥"
-          
-          curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
-            -d "chat_id=${TELEGRAM_CHAT_ID}" \
-            -d "text=${MESSAGE}" \
-            -d "parse_mode=HTML"
+
+          # Get current day of week in French for a personalized message
+          DAY=$(date +%u)  # 1=Mon, 7=Sun
+          case $DAY in
+            1) DAY_MSG="Bonne semaine ! C'est lundi" ;;
+            2) DAY_MSG="On continue ! C'est mardi" ;;
+            3) DAY_MSG="Mi-semaine ! C'est mercredi" ;;
+            4) DAY_MSG="Presque le week-end ! C'est jeudi" ;;
+            5) DAY_MSG="Dernier effort de la semaine ! C'est vendredi" ;;
+            6) DAY_MSG="Weekend study ! C'est samedi" ;;
+            7) DAY_MSG="Repos et révision du dimanche" ;;
+          esac
+
+          # Build the message
+          MESSAGE="📚 <b>Memora — Rappel quotidien</b>
+
+${DAY_MSG}, n'oublie pas tes révisions du jour !
+
+🔥 Ta série dépend de toi. Ouvre Memora et révise tes cartes dues maintenant pour ne pas perdre ta progression de répétition espacée.
+
+<i>💡 Astuce : Note chaque carte selon ta difficulté (1-4) — l'algorithme SM-2 s'adapte à ton niveau !</i>"
+
+          # Inline keyboard button to open the app
+          KEYBOARD="{\"inline_keyboard\":[[{\"text\":\"📖 Ouvrir Memora\",\"url\":\"${APP_URL}\"}]]}"
+
+          # Send via Telegram API
+          RESPONSE=$(curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"chat_id\": \"${TELEGRAM_CHAT_ID}\",
+              \"text\": \"${MESSAGE}\",
+              \"parse_mode\": \"HTML\",
+              \"reply_markup\": ${KEYBOARD}
+            }")
+
+          echo "Telegram API Response: $RESPONSE"
+
+          # Check if successful
+          if echo "$RESPONSE" | grep -q '"ok":true'; then
+            echo "✅ Telegram reminder sent successfully!"
+          else
+            echo "❌ Failed to send Telegram message. Check your secrets."
+            exit 1
+          fi

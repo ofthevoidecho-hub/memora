@@ -1,7 +1,11 @@
 // Memora Service Worker — Daily Revision Reminder
-// Handles scheduling and firing browser notifications for due flashcard reviews.
+// Uses IndexedDB to read real card data at notification time,
+// so the dueCount is always accurate even if the browser was closed for days.
 
-const SW_VERSION = 'memora-sw-v1';
+const SW_VERSION = 'memora-sw-v2';
+const IDB_NAME = 'memora_idb';
+const IDB_VERSION = 1;
+
 let scheduledTimerId = null;
 
 self.addEventListener('install', (event) => {
@@ -9,7 +13,12 @@ self.addEventListener('install', (event) => {
 });
 
 self.addEventListener('activate', (event) => {
-  event.waitUntil(self.clients.claim());
+  event.waitUntil(
+    self.clients.claim().then(() => {
+      // On SW activation, try to restore scheduling from IndexedDB
+      return restoreScheduleFromIDB();
+    })
+  );
 });
 
 // Listen for messages from the main app
@@ -26,9 +35,119 @@ self.addEventListener('message', (event) => {
   }
 
   if (type === 'TEST_NOTIFICATION') {
-    fireNotification(payload?.dueCount ?? 0);
+    readIDBAndFireNotification();
   }
 });
+
+// ---------------------------------------------------------------------------
+// IndexedDB helpers
+// ---------------------------------------------------------------------------
+
+function openIDB() {
+  return new Promise((resolve, reject) => {
+    const req = self.indexedDB.open(IDB_NAME, IDB_VERSION);
+    req.onupgradeneeded = (e) => {
+      const db = e.target.result;
+      if (!db.objectStoreNames.contains('cards')) {
+        db.createObjectStore('cards', { keyPath: 'id' });
+      }
+      if (!db.objectStoreNames.contains('meta')) {
+        db.createObjectStore('meta');
+      }
+    };
+    req.onsuccess = (e) => resolve(e.target.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+function idbGetAll(db, storeName) {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(storeName, 'readonly');
+    const store = tx.objectStore(storeName);
+    const req = store.getAll();
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+function idbGet(db, storeName, key) {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(storeName, 'readonly');
+    const store = tx.objectStore(storeName);
+    const req = store.get(key);
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+/**
+ * Read cards from IndexedDB and compute how many are due right now.
+ */
+async function computeDueCount() {
+  try {
+    const db = await openIDB();
+    const cards = await idbGetAll(db, 'cards');
+    db.close();
+
+    const now = new Date();
+    return cards.filter((card) => {
+      if (card.state === 'new') return true;
+      return new Date(card.dueDate) <= now;
+    }).length;
+  } catch {
+    return 0;
+  }
+}
+
+/**
+ * Read notification meta from IndexedDB.
+ * Returns { notificationTime, notificationsEnabled, telegramEnabled, telegramBotToken, telegramChatId }
+ */
+async function readNotificationMeta() {
+  try {
+    const db = await openIDB();
+    const notificationTime = await idbGet(db, 'meta', 'notificationTime');
+    const notificationsEnabled = await idbGet(db, 'meta', 'notificationsEnabled');
+    const telegramEnabled = await idbGet(db, 'meta', 'telegramEnabled');
+    const telegramBotToken = await idbGet(db, 'meta', 'telegramBotToken');
+    const telegramChatId = await idbGet(db, 'meta', 'telegramChatId');
+    db.close();
+    return {
+      notificationTime: notificationTime || '09:00',
+      notificationsEnabled: !!notificationsEnabled,
+      telegramEnabled: !!telegramEnabled,
+      telegramBotToken: telegramBotToken || '',
+      telegramChatId: telegramChatId || '',
+    };
+  } catch {
+    return {
+      notificationTime: '09:00',
+      notificationsEnabled: false,
+      telegramEnabled: false,
+      telegramBotToken: '',
+      telegramChatId: '',
+    };
+  }
+}
+
+/**
+ * After SW restart (browser reboot, update), restore the timer from IDB meta.
+ */
+async function restoreScheduleFromIDB() {
+  const meta = await readNotificationMeta();
+  if (meta.notificationsEnabled || meta.telegramEnabled) {
+    scheduleReminder({
+      time: meta.notificationTime,
+      telegramNotificationsEnabled: meta.telegramEnabled,
+      telegramBotToken: meta.telegramBotToken,
+      telegramChatId: meta.telegramChatId,
+    });
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Scheduling
+// ---------------------------------------------------------------------------
 
 function clearScheduledReminder() {
   if (scheduledTimerId !== null) {
@@ -38,16 +157,30 @@ function clearScheduledReminder() {
 }
 
 function scheduleReminder(payload) {
-  const { time, dueCount, telegramBotToken, telegramChatId, telegramNotificationsEnabled } = payload;
+  const { time, telegramBotToken, telegramChatId, telegramNotificationsEnabled } = payload;
   const msUntilFire = getMsUntilTime(time);
-  scheduledTimerId = setTimeout(() => {
+
+  scheduledTimerId = setTimeout(async () => {
+    // Compute the REAL dueCount from IndexedDB at fire time
+    const dueCount = await computeDueCount();
+
     fireNotification(dueCount);
+
     if (telegramNotificationsEnabled && telegramBotToken && telegramChatId) {
       fireTelegramNotification(telegramBotToken, telegramChatId, dueCount);
     }
+
     // Re-schedule for next day
     scheduledTimerId = setTimeout(() => scheduleReminder(payload), 24 * 60 * 60 * 1000);
   }, msUntilFire);
+}
+
+/**
+ * Read IDB and fire notification immediately (used for TEST_NOTIFICATION).
+ */
+async function readIDBAndFireNotification() {
+  const dueCount = await computeDueCount();
+  fireNotification(dueCount);
 }
 
 function fireTelegramNotification(token, chatId, dueCount) {

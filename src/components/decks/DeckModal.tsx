@@ -6,7 +6,7 @@ interface DeckModalProps {
   isOpen: boolean;
   onClose: () => void;
   deckToEdit?: Deck | null;
-  onSave: (deckData: { title: string; description: string; folder: string; color: string }) => void;
+  onSave: (deckData: { title: string; description: string; folder: string; color: string; telegramReminderEnabled?: boolean }) => void;
 }
 
 export const DeckModal: React.FC<DeckModalProps> = ({ isOpen, onClose, deckToEdit, onSave }) => {
@@ -14,6 +14,7 @@ export const DeckModal: React.FC<DeckModalProps> = ({ isOpen, onClose, deckToEdi
   const [description, setDescription] = useState('');
   const [folder, setFolder] = useState('Général');
   const [color, setColor] = useState('indigo');
+  const [telegramReminderEnabled, setTelegramReminderEnabled] = useState(false);
 
   useEffect(() => {
     if (deckToEdit) {
@@ -21,11 +22,13 @@ export const DeckModal: React.FC<DeckModalProps> = ({ isOpen, onClose, deckToEdi
       setDescription(deckToEdit.description);
       setFolder(deckToEdit.folder || 'Général');
       setColor(deckToEdit.color || 'indigo');
+      setTelegramReminderEnabled(!!deckToEdit.telegramReminderEnabled);
     } else {
       setTitle('');
       setDescription('');
       setFolder('Général');
       setColor('indigo');
+      setTelegramReminderEnabled(false);
     }
   }, [deckToEdit, isOpen]);
 
@@ -34,7 +37,7 @@ export const DeckModal: React.FC<DeckModalProps> = ({ isOpen, onClose, deckToEdi
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) return;
-    onSave({ title, description, folder, color });
+    onSave({ title, description, folder, color, telegramReminderEnabled });
     onClose();
   };
 
@@ -123,6 +126,19 @@ export const DeckModal: React.FC<DeckModalProps> = ({ isOpen, onClose, deckToEdi
                 />
               ))}
             </div>
+          </div>
+
+          <div className="flex items-center gap-3 p-3 rounded-2xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-200 dark:border-neutral-800/60">
+            <input
+              type="checkbox"
+              id="telegramReminderEnabled"
+              checked={telegramReminderEnabled}
+              onChange={(e) => setTelegramReminderEnabled(e.target.checked)}
+              className="w-4 h-4 rounded border-neutral-300 text-indigo-600 focus:ring-indigo-500"
+            />
+            <label htmlFor="telegramReminderEnabled" className="text-xs font-semibold text-neutral-700 dark:text-neutral-300 cursor-pointer select-none">
+              Activer les rappels Telegram pour ce deck (Questions difficiles)
+            </label>
           </div>
 
           <div className="pt-4 flex items-center justify-end gap-3 border-t border-neutral-100 dark:border-neutral-800">

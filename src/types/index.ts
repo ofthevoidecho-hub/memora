@@ -31,6 +31,7 @@ export interface Deck {
   color: string; // CSS color string or Tailwind color name
   icon: string;
   createdAt: string;
+  telegramReminderEnabled?: boolean;
 }
 
 export interface ReviewLog {

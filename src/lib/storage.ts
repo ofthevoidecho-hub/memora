@@ -16,6 +16,7 @@ const STORAGE_KEYS = {
 const IDB_NAME = 'memora_idb';
 const IDB_VERSION = 1;
 const IDB_STORE_CARDS = 'cards';
+const IDB_STORE_DECKS = 'decks';
 const IDB_STORE_META = 'meta';
 
 function openMemoraDB(): Promise<IDBDatabase> {
@@ -25,6 +26,9 @@ function openMemoraDB(): Promise<IDBDatabase> {
       const db = (e.target as IDBOpenDBRequest).result;
       if (!db.objectStoreNames.contains(IDB_STORE_CARDS)) {
         db.createObjectStore(IDB_STORE_CARDS, { keyPath: 'id' });
+      }
+      if (!db.objectStoreNames.contains(IDB_STORE_DECKS)) {
+        db.createObjectStore(IDB_STORE_DECKS, { keyPath: 'id' });
       }
       if (!db.objectStoreNames.contains(IDB_STORE_META)) {
         db.createObjectStore(IDB_STORE_META);
@@ -36,11 +40,10 @@ function openMemoraDB(): Promise<IDBDatabase> {
 }
 
 /**
- * Sync all cards + notification settings to IndexedDB.
- * Called after every saveCards() and saveSettings().
- * The Service Worker reads this data to calculate the real dueCount.
+ * Sync all cards, decks + notification settings to IndexedDB.
+ * Called after every saveDecks(), saveCards() and saveSettings().
  */
-export async function syncToIndexedDB(cards: Card[], settings?: UserSettings): Promise<void> {
+export async function syncToIndexedDB(cards: Card[], settings?: UserSettings, decks?: Deck[]): Promise<void> {
   try {
     const db = await openMemoraDB();
 
@@ -51,6 +54,19 @@ export async function syncToIndexedDB(cards: Card[], settings?: UserSettings): P
       store.clear();
       for (const card of cards) {
         store.put(card);
+      }
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error);
+    });
+
+    // Write all decks
+    const activeDecks = decks || loadDecks();
+    await new Promise<void>((resolve, reject) => {
+      const tx = db.transaction(IDB_STORE_DECKS, 'readwrite');
+      const store = tx.objectStore(IDB_STORE_DECKS);
+      store.clear();
+      for (const d of activeDecks) {
+        store.put(d);
       }
       tx.oncomplete = () => resolve();
       tx.onerror = () => reject(tx.error);
@@ -109,6 +125,7 @@ export function loadDecks(): Deck[] {
 export function saveDecks(decks: Deck[]) {
   localStorage.setItem(STORAGE_KEYS.DECKS, JSON.stringify(decks));
   storageEventBus.dispatchEvent(new Event('decks_updated'));
+  syncToIndexedDB(loadCards(), undefined, decks).catch(() => {});
 }
 
 export function loadCards(): Card[] {
@@ -140,7 +157,7 @@ export function saveCards(cards: Card[]) {
   localStorage.setItem(STORAGE_KEYS.CARDS, JSON.stringify(cards));
   storageEventBus.dispatchEvent(new Event('cards_updated'));
   // Sync to IndexedDB so the SW can read the real dueCount at notification time
-  syncToIndexedDB(cards).catch(() => {});
+  syncToIndexedDB(cards, undefined, loadDecks()).catch(() => {});
 }
 
 export function loadReviewLogs(): ReviewLog[] {
@@ -175,7 +192,8 @@ export function saveSettings(settings: UserSettings) {
   storageEventBus.dispatchEvent(new Event('settings_updated'));
   // Sync notification settings to IndexedDB for the SW
   const cards = loadCards();
-  syncToIndexedDB(cards, settings).catch(() => {});
+  const decks = loadDecks();
+  syncToIndexedDB(cards, settings, decks).catch(() => {});
 }
 
 export function loadStats(): UserStats {

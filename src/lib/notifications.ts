@@ -1,3 +1,5 @@
+import { Card, Deck } from '../types';
+
 /**
  * Memora Notification Service
  * Manages browser push notification permissions, service worker registration,
@@ -136,7 +138,9 @@ export async function checkAndFireOnAppLoad(
     enabled?: boolean;
     token?: string;
     chatId?: string;
-  }
+  },
+  cards?: Card[],
+  decks?: Deck[]
 ): Promise<void> {
   const todayStr = new Date().toISOString().split('T')[0];
   const now = new Date();
@@ -169,14 +173,47 @@ export async function checkAndFireOnAppLoad(
   if (
     telegramOptions?.enabled &&
     telegramOptions.token &&
-    telegramOptions.chatId &&
-    dueCount > 0
+    telegramOptions.chatId
   ) {
     const lastTelegramDate = localStorage.getItem(LAST_TELEGRAM_DATE_KEY);
     if (lastTelegramDate !== todayStr) {
-      const text = `📚 <b>Memora — Rappel de révision</b>\n\nTu as <b>${dueCount}</b> carte${dueCount > 1 ? 's' : ''} à réviser aujourd'hui. Maintiens ta série ! 🔥`;
-      const success = await sendTelegramNotification(telegramOptions.token, telegramOptions.chatId, text);
-      if (success) {
+      let sentSomething = false;
+      if (dueCount > 0) {
+        const text = `📚 <b>Memora — Rappel de révision</b>\n\nTu as <b>${dueCount}</b> carte${dueCount > 1 ? 's' : ''} à réviser aujourd'hui. Maintiens ta série ! 🔥`;
+        const success = await sendTelegramNotification(telegramOptions.token, telegramOptions.chatId, text);
+        if (success) {
+          sentSomething = true;
+        }
+      }
+
+      // Send deck-specific notifications
+      if (cards && decks) {
+        for (const deck of decks) {
+          if (deck.telegramReminderEnabled) {
+            const deckCards = cards.filter(c => c.deckId === deck.id);
+            const difficultCards = deckCards.filter(c => c.difficulty >= 7 || c.flagged || c.lapses > 1);
+
+            if (difficultCards.length > 0) {
+              let text = `📚 <b>Rappel — Deck : ${deck.title}</b>\n`;
+              text += `Voici les questions que vous avez déclarées difficiles à restituer :\n\n`;
+              
+              difficultCards.forEach((c, idx) => {
+                text += `<b>${idx + 1}. Q:</b> ${c.question}\n`;
+                text += `<b>R:</b> <tg-spoiler>${c.answer}</tg-spoiler>\n\n`;
+              });
+              
+              text += `Prêt à les restituer ? 🔥`;
+
+              const success = await sendTelegramNotification(telegramOptions.token, telegramOptions.chatId, text);
+              if (success) {
+                sentSomething = true;
+              }
+            }
+          }
+        }
+      }
+
+      if (sentSomething || dueCount === 0) {
         localStorage.setItem(LAST_TELEGRAM_DATE_KEY, todayStr);
       }
     }

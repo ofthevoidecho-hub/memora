@@ -78,11 +78,17 @@ export function useMemoraState() {
         (settings.notificationsEnabled || settings.telegramNotificationsEnabled) &&
         settings.notificationTime
       ) {
-        checkAndFireOnAppLoad(settings.notificationTime, dueCards.length, {
-          enabled: settings.telegramNotificationsEnabled,
-          token: settings.telegramBotToken,
-          chatId: settings.telegramChatId,
-        });
+        checkAndFireOnAppLoad(
+          settings.notificationTime,
+          dueCards.length,
+          {
+            enabled: settings.telegramNotificationsEnabled,
+            token: settings.telegramBotToken,
+            chatId: settings.telegramChatId,
+          },
+          cards,
+          decks
+        );
       }
     };
     init();
@@ -175,7 +181,7 @@ export function useMemoraState() {
 
   // Deck CRUD Operations
   const addDeck = useCallback(
-    (deckData: { title: string; description: string; folder?: string; color?: string; icon?: string }) => {
+    (deckData: { title: string; description: string; folder?: string; color?: string; icon?: string; telegramReminderEnabled?: boolean }) => {
       const newDeck: Deck = {
         id: 'deck_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
         title: deckData.title,
@@ -184,6 +190,7 @@ export function useMemoraState() {
         color: deckData.color || 'indigo',
         icon: deckData.icon || 'Layers',
         createdAt: new Date().toISOString(),
+        telegramReminderEnabled: deckData.telegramReminderEnabled || false,
       };
       saveDecks([...decks, newDeck]);
       return newDeck;

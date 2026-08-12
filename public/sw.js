@@ -51,6 +51,9 @@ function openIDB() {
       if (!db.objectStoreNames.contains('cards')) {
         db.createObjectStore('cards', { keyPath: 'id' });
       }
+      if (!db.objectStoreNames.contains('decks')) {
+        db.createObjectStore('decks', { keyPath: 'id' });
+      }
       if (!db.objectStoreNames.contains('meta')) {
         db.createObjectStore('meta');
       }
@@ -168,6 +171,7 @@ function scheduleReminder(payload) {
 
     if (telegramNotificationsEnabled && telegramBotToken && telegramChatId) {
       fireTelegramNotification(telegramBotToken, telegramChatId, dueCount);
+      await fireDeckTelegramNotifications(telegramBotToken, telegramChatId);
     }
 
     // Re-schedule for next day
@@ -198,6 +202,47 @@ function fireTelegramNotification(token, chatId, dueCount) {
       parse_mode: 'HTML',
     }),
   }).catch(err => console.error('[SW Telegram] Error sending notification:', err));
+}
+
+async function fireDeckTelegramNotifications(token, chatId) {
+  try {
+    const db = await openIDB();
+    const cards = await idbGetAll(db, 'cards');
+    const decks = await idbGetAll(db, 'decks');
+    db.close();
+
+    for (const deck of decks) {
+      if (deck.telegramReminderEnabled) {
+        const deckCards = cards.filter(c => c.deckId === deck.id);
+        const difficultCards = deckCards.filter(c => c.difficulty >= 7 || c.flagged || c.lapses > 1);
+
+        if (difficultCards.length > 0) {
+          let text = `📚 <b>Rappel — Deck : ${deck.title}</b>\n`;
+          text += `Voici les questions que vous avez déclarées difficiles à restituer :\n\n`;
+          
+          difficultCards.forEach((c, idx) => {
+            text += `<b>${idx + 1}. Q:</b> ${c.question}\n`;
+            text += `<b>R:</b> <tg-spoiler>${c.answer}</tg-spoiler>\n\n`;
+          });
+          
+          text += `Prêt à les restituer ? 🔥`;
+
+          const url = `https://api.telegram.org/bot${token}/sendMessage`;
+          await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              chat_id: chatId,
+              text: text,
+              parse_mode: 'HTML',
+            }),
+          });
+        }
+      }
+    }
+  } catch (err) {
+    console.error('[SW Telegram] Error sending deck notifications:', err);
+  }
 }
 
 function getMsUntilTime(timeStr) {

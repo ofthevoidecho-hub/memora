@@ -48,7 +48,7 @@ export const DecksView: React.FC<DecksViewProps> = ({
     setIsModalOpen(true);
   };
 
-  const handleSaveDeck = (data: { title: string; description: string; folder: string; color: string }) => {
+  const handleSaveDeck = (data: { title: string; description: string; folder: string; color: string; telegramReminderEnabled?: boolean }) => {
     if (deckToEdit) {
       onUpdateDeck(deckToEdit.id, data);
     } else {

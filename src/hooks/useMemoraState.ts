@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
+import { useUser } from '@clerk/clerk-react';
 import { Card, CardRating, Deck, ReviewLog, UserSettings, UserStats } from '../types';
 import {
   loadCards,
@@ -13,6 +14,7 @@ import {
   saveStats,
   resetReviewStats as storageResetReviewStats,
   storageEventBus,
+  syncToSupabase,
 } from '../lib/storage';
 import { calculateNextReview, isCardDue } from '../lib/spacedRepetition';
 import { registerServiceWorker, scheduleNotification, cancelNotification, checkAndFireOnAppLoad } from '../lib/notifications';
@@ -23,6 +25,15 @@ export function useMemoraState() {
   const [reviewLogs, setReviewLogs] = useState<ReviewLog[]>(loadReviewLogs);
   const [settings, setSettings] = useState<UserSettings>(loadSettings);
   const [stats, setStats] = useState<UserStats>(loadStats);
+
+  const { user } = useUser();
+
+  // Supabase Sync
+  useEffect(() => {
+    if (user) {
+      syncToSupabase(user.id, cards, decks);
+    }
+  }, [user, cards, decks]);
 
   // Computed helper counters
   const dueCards = cards.filter((c) => isCardDue(c));

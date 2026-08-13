@@ -1,5 +1,6 @@
 import { Card, Deck, ReviewLog, UserSettings, UserStats } from '../types';
 import { INITIAL_CARDS, INITIAL_DECKS, INITIAL_SETTINGS, INITIAL_STATS } from '../data/demoData';
+import { supabase } from './supabase';
 
 const STORAGE_KEYS = {
   DECKS: 'memora_decks_v1',
@@ -249,4 +250,61 @@ export function resetAllData() {
   saveReviewLogs([]);
   saveSettings(INITIAL_SETTINGS);
   saveStats(INITIAL_STATS);
+}
+
+// ---------------------------------------------------------------------------
+// Supabase Sync
+// ---------------------------------------------------------------------------
+
+export async function syncToSupabase(userId: string | null | undefined, cards: Card[], decks: Deck[]) {
+  if (!userId) return; // User not logged in
+
+  try {
+    // Sync Decks
+    const dbDecks = decks.map((deck) => ({
+      id: deck.id,
+      user_id: userId,
+      title: deck.title,
+      description: deck.description || null,
+      folder: deck.folder || null,
+      color: deck.color || null,
+      icon: deck.icon || null,
+      telegram_reminder_enabled: !!deck.telegramReminderEnabled,
+      created_at: deck.createdAt,
+    }));
+
+    if (dbDecks.length > 0) {
+      const { error: decksError } = await supabase.from('decks').upsert(dbDecks, { onConflict: 'id' });
+      if (decksError) console.error('[Supabase Sync] Decks error:', decksError);
+    }
+
+    // Sync Cards
+    const dbCards = cards.map((card) => ({
+      id: card.id,
+      user_id: userId,
+      deck_id: card.deckId,
+      question: card.question,
+      answer: card.answer,
+      tags: card.tags || [],
+      difficulty: card.difficulty,
+      ease: card.ease,
+      interval: card.interval,
+      repetitions: card.repetitions,
+      lapses: card.lapses,
+      stability: card.stability,
+      state: card.state,
+      favorite: !!card.favorite,
+      flagged: !!card.flagged,
+      due_date: card.dueDate,
+      created_at: card.createdAt,
+      updated_at: card.updatedAt,
+    }));
+
+    if (dbCards.length > 0) {
+      const { error: cardsError } = await supabase.from('cards').upsert(dbCards, { onConflict: 'id' });
+      if (cardsError) console.error('[Supabase Sync] Cards error:', cardsError);
+    }
+  } catch (err) {
+    console.error('[Supabase Sync] Exception:', err);
+  }
 }

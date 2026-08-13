@@ -10,12 +10,12 @@ if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY || !TELEGRAM_BOT_TOKEN || !TELEG
   process.exit(1);
 }
 
-// Clean up URL in case the user accidentally included trailing slashes or /rest/v1
-SUPABASE_URL = SUPABASE_URL.trim();
+// Clean up URL in case the user accidentally included trailing slashes, /rest/v1 or literal quotes
+SUPABASE_URL = SUPABASE_URL.replace(/["']/g, "").trim();
 if (SUPABASE_URL.endsWith('/')) SUPABASE_URL = SUPABASE_URL.slice(0, -1);
 if (SUPABASE_URL.endsWith('/rest/v1')) SUPABASE_URL = SUPABASE_URL.replace('/rest/v1', '');
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY.replace(/["']/g, "").trim());
 
 async function run() {
   console.log("Fetching decks with Telegram reminders enabled...");

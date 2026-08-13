@@ -9,9 +9,9 @@ if (!supabaseUrl || !supabaseAnonKey) {
   );
 }
 
-// Clean up URL in case it has trailing slashes or /rest/v1
-supabaseUrl = supabaseUrl.trim();
+// Clean up URL in case it has trailing slashes, /rest/v1, or literal quotes
+supabaseUrl = supabaseUrl.replace(/["']/g, "").trim();
 if (supabaseUrl.endsWith('/')) supabaseUrl = supabaseUrl.slice(0, -1);
 if (supabaseUrl.endsWith('/rest/v1')) supabaseUrl = supabaseUrl.replace('/rest/v1', '');
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const supabase = createClient(supabaseUrl, supabaseAnonKey.replace(/["']/g, "").trim());

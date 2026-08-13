@@ -1,8 +1,11 @@
-name: Daily Telegram Reminder
+name: Daily Telegram Reminder (4x per day)
 
 on:
   schedule:
-    - cron: '0 9 * * *'
+    - cron: '0 8 * * *'   # 9h Paris (UTC+1)
+    - cron: '0 12 * * *'  # 13h Paris
+    - cron: '0 16 * * *'  # 17h Paris
+    - cron: '0 20 * * *'  # 21h Paris
   workflow_dispatch:
 
 jobs:

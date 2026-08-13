@@ -278,8 +278,11 @@ export async function syncToSupabase(userId: string | null | undefined, cards: C
       if (decksError) console.error('[Supabase Sync] Decks error:', decksError);
     }
 
-    // Sync Cards
-    const dbCards = cards.map((card) => ({
+    // Sync Cards (filter out ghost cards that don't belong to any deck)
+    const validDeckIds = new Set(decks.map(d => d.id));
+    const validCards = cards.filter(c => validDeckIds.has(c.deckId));
+
+    const dbCards = validCards.map((card) => ({
       id: card.id,
       user_id: userId,
       deck_id: card.deckId,

@@ -18,7 +18,27 @@ if (SUPABASE_URL.endsWith('/rest/v1')) SUPABASE_URL = SUPABASE_URL.replace('/res
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY.replace(/["']/g, "").trim());
 
 async function run() {
-  console.log("Fetching decks with Telegram reminders enabled...");
+  // Debug: show which Supabase project we're connecting to
+  const maskedUrl = SUPABASE_URL.replace(/https:\/\/(\w{4})\w+/, 'https://$1***');
+  console.log(`Connecting to Supabase: ${maskedUrl}`);
+
+  // Debug: first check total decks to verify connectivity
+  const { data: allDecks, error: allDecksError } = await supabase
+    .from('decks')
+    .select('id, title, telegram_reminder_enabled');
+
+  if (allDecksError) {
+    console.error("Error connecting to Supabase / fetching decks:", allDecksError);
+    console.error("This likely means SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY is wrong in your GitHub Secrets.");
+    process.exit(1);
+  }
+
+  console.log(`Found ${allDecks?.length || 0} total deck(s) in database.`);
+  if (allDecks && allDecks.length > 0) {
+    allDecks.forEach(d => console.log(`  - "${d.title}" → telegram_reminder_enabled = ${d.telegram_reminder_enabled}`));
+  }
+
+  console.log("\nFetching decks with Telegram reminders enabled...");
   
   // Get decks that have telegram_reminder_enabled = true
   const { data: decks, error: decksError } = await supabase
@@ -38,6 +58,7 @@ async function run() {
 
   // Get users who own these decks
   const userIds = [...new Set(decks.map(d => d.user_id))];
+  const nowISO = new Date().toISOString();
 
   for (const userId of userIds) {
     const userDecks = decks.filter(d => d.user_id === userId);
@@ -54,38 +75,73 @@ async function run() {
       continue;
     }
 
-    const difficultCards = cards.filter(c => c.difficulty >= 7 || c.flagged || c.lapses > 1);
+    if (!cards || cards.length === 0) {
+      console.log(`No cards found for user ${userId}, skipping.`);
+      continue;
+    }
 
-    if (difficultCards.length > 0) {
-      let message = `📚 <b>Rappels Memora — Questions Difficiles</b>\n\n`;
+    // Cards that are due for review (due_date <= now)
+    const dueCards = cards.filter(c => c.due_date && c.due_date <= nowISO);
+    // Cards that are struggling (lower threshold to be useful)
+    const difficultCards = cards.filter(c => c.difficulty >= 5 || c.flagged || c.lapses > 0);
+
+    console.log(`User ${userId}: ${cards.length} total cards, ${dueCards.length} due, ${difficultCards.length} difficult/flagged.`);
+
+    // Build the message
+    let message = '';
+
+    if (dueCards.length > 0) {
+      message += `📚 <b>Rappels Memora — ${dueCards.length} carte(s) à réviser</b>\n\n`;
       
-      difficultCards.forEach((c, idx) => {
+      // Show up to 10 due cards
+      const preview = dueCards.slice(0, 10);
+      preview.forEach((c, idx) => {
         message += `<b>${idx + 1}. Q:</b> ${c.question}\n`;
         message += `<b>R:</b> <tg-spoiler>${c.answer}</tg-spoiler>\n\n`;
       });
       
-      message += `Prêt à les restituer ? 🔥\n\n`;
-      message += `<a href="${process.env.APP_URL || 'https://memora.vercel.app'}">📖 Ouvrir Memora</a>`;
-
-      console.log(`Sending message to Telegram for user ${userId}...`);
+      if (dueCards.length > 10) {
+        message += `<i>...et ${dueCards.length - 10} autre(s)</i>\n\n`;
+      }
+    } else if (difficultCards.length > 0) {
+      message += `📚 <b>Rappels Memora — Questions à renforcer</b>\n\n`;
       
-      const response = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          chat_id: TELEGRAM_CHAT_ID,
-          text: message,
-          parse_mode: 'HTML',
-        }),
+      const preview = difficultCards.slice(0, 10);
+      preview.forEach((c, idx) => {
+        message += `<b>${idx + 1}. Q:</b> ${c.question}\n`;
+        message += `<b>R:</b> <tg-spoiler>${c.answer}</tg-spoiler>\n\n`;
       });
 
-      if (!response.ok) {
-        console.error(`Failed to send Telegram message: ${response.statusText}`);
-      } else {
-        console.log(`Successfully sent message.`);
+      if (difficultCards.length > 10) {
+        message += `<i>...et ${difficultCards.length - 10} autre(s)</i>\n\n`;
       }
     } else {
-      console.log(`No difficult cards for user ${userId} today.`);
+      // General reminder even if no cards are due right now
+      message += `📚 <b>Rappels Memora</b>\n\n`;
+      message += `✅ Aucune carte à réviser pour le moment !\n`;
+      message += `Tu as <b>${cards.length}</b> carte(s) au total.\n\n`;
+    }
+
+    message += `Prêt à réviser ? 🔥\n\n`;
+    message += `<a href="${process.env.APP_URL || 'https://memora.vercel.app'}">📖 Ouvrir Memora</a>`;
+
+    console.log(`Sending message to Telegram for user ${userId}...`);
+    
+    const response = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: TELEGRAM_CHAT_ID,
+        text: message,
+        parse_mode: 'HTML',
+      }),
+    });
+
+    if (!response.ok) {
+      const errBody = await response.text();
+      console.error(`Failed to send Telegram message: ${response.status} ${response.statusText} — ${errBody}`);
+    } else {
+      console.log(`Successfully sent message.`);
     }
   }
 }

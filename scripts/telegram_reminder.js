@@ -86,20 +86,14 @@ async function run() {
       continue;
     }
 
-    // Helper to truncate long text
-    const trunc = (s, max = 120) => s && s.length > max ? s.slice(0, max) + '…' : s;
-
+    // Build message with only questions, no answers, no ellipsis
     let message = `📚 <b>Rappels Memora — ${difficultCards.length} question(s) difficile(s)</b>\n\n`;
 
-    const preview = difficultCards.slice(0, 5);
+    // Display all difficult questions (or up to a safe limit for Telegram)
+    const preview = difficultCards.slice(0, 30);
     preview.forEach((c, idx) => {
-      message += `<b>${idx + 1}. Q:</b> ${trunc(c.question)}\n`;
-      message += `<b>R:</b> <tg-spoiler>${trunc(c.answer)}</tg-spoiler>\n\n`;
+      message += `<b>${idx + 1}.</b> ${c.question}\n\n`;
     });
-
-    if (difficultCards.length > 5) {
-      message += `<i>...et ${difficultCards.length - 5} autre(s)</i>\n\n`;
-    }
 
     message += `Prêt à réviser ? 🔥\n\n`;
     message += `<a href="${process.env.APP_URL || 'https://memora.vercel.app'}">📖 Ouvrir Memora</a>`;

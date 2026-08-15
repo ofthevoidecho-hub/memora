@@ -75,51 +75,29 @@ async function run() {
       continue;
     }
 
-    if (!cards || cards.length === 0) {
-      console.log(`No cards found for user ${userId}, skipping.`);
+    // Only cards the user explicitly marked as difficult (flagged)
+    const flaggedCards = cards.filter(c => c.flagged);
+
+    console.log(`User ${userId}: ${cards.length} total cards, ${flaggedCards.length} flagged as difficult.`);
+
+    if (flaggedCards.length === 0) {
+      console.log(`No flagged cards for user ${userId}, skipping.`);
       continue;
     }
 
-    // Cards that are due for review (due_date <= now)
-    const dueCards = cards.filter(c => c.due_date && c.due_date <= nowISO);
-    // Cards that are struggling (lower threshold to be useful)
-    const difficultCards = cards.filter(c => c.difficulty >= 5 || c.flagged || c.lapses > 0);
+    // Helper to truncate long text
+    const trunc = (s, max = 120) => s && s.length > max ? s.slice(0, max) + '…' : s;
 
-    console.log(`User ${userId}: ${cards.length} total cards, ${dueCards.length} due, ${difficultCards.length} difficult/flagged.`);
+    let message = `📚 <b>Rappels Memora — ${flaggedCards.length} question(s) difficile(s)</b>\n\n`;
 
-    // Build the message
-    let message = '';
+    const preview = flaggedCards.slice(0, 5);
+    preview.forEach((c, idx) => {
+      message += `<b>${idx + 1}. Q:</b> ${trunc(c.question)}\n`;
+      message += `<b>R:</b> <tg-spoiler>${trunc(c.answer)}</tg-spoiler>\n\n`;
+    });
 
-    if (dueCards.length > 0) {
-      message += `📚 <b>Rappels Memora — ${dueCards.length} carte(s) à réviser</b>\n\n`;
-      
-      // Show up to 10 due cards
-      const preview = dueCards.slice(0, 10);
-      preview.forEach((c, idx) => {
-        message += `<b>${idx + 1}. Q:</b> ${c.question}\n`;
-        message += `<b>R:</b> <tg-spoiler>${c.answer}</tg-spoiler>\n\n`;
-      });
-      
-      if (dueCards.length > 10) {
-        message += `<i>...et ${dueCards.length - 10} autre(s)</i>\n\n`;
-      }
-    } else if (difficultCards.length > 0) {
-      message += `📚 <b>Rappels Memora — Questions à renforcer</b>\n\n`;
-      
-      const preview = difficultCards.slice(0, 10);
-      preview.forEach((c, idx) => {
-        message += `<b>${idx + 1}. Q:</b> ${c.question}\n`;
-        message += `<b>R:</b> <tg-spoiler>${c.answer}</tg-spoiler>\n\n`;
-      });
-
-      if (difficultCards.length > 10) {
-        message += `<i>...et ${difficultCards.length - 10} autre(s)</i>\n\n`;
-      }
-    } else {
-      // General reminder even if no cards are due right now
-      message += `📚 <b>Rappels Memora</b>\n\n`;
-      message += `✅ Aucune carte à réviser pour le moment !\n`;
-      message += `Tu as <b>${cards.length}</b> carte(s) au total.\n\n`;
+    if (flaggedCards.length > 5) {
+      message += `<i>...et ${flaggedCards.length - 5} autre(s)</i>\n\n`;
     }
 
     message += `Prêt à réviser ? 🔥\n\n`;

@@ -75,29 +75,30 @@ async function run() {
       continue;
     }
 
-    // Only cards the user explicitly marked as difficult (flagged)
-    const flaggedCards = cards.filter(c => c.flagged);
+    // Cards rated "Difficile" or "À revoir" during review (difficulty > 5 or lapses > 0)
+    // The user explicitly requested to base this on the rating buttons, ignoring the manual flag icon.
+    const difficultCards = cards.filter(c => c.difficulty > 5 || c.lapses > 0);
 
-    console.log(`User ${userId}: ${cards.length} total cards, ${flaggedCards.length} flagged as difficult.`);
+    console.log(`User ${userId}: ${cards.length} total cards, ${difficultCards.length} rated as difficult/lapses.`);
 
-    if (flaggedCards.length === 0) {
-      console.log(`No flagged cards for user ${userId}, skipping.`);
+    if (difficultCards.length === 0) {
+      console.log(`No difficult cards for user ${userId}, skipping.`);
       continue;
     }
 
     // Helper to truncate long text
     const trunc = (s, max = 120) => s && s.length > max ? s.slice(0, max) + '…' : s;
 
-    let message = `📚 <b>Rappels Memora — ${flaggedCards.length} question(s) difficile(s)</b>\n\n`;
+    let message = `📚 <b>Rappels Memora — ${difficultCards.length} question(s) difficile(s)</b>\n\n`;
 
-    const preview = flaggedCards.slice(0, 5);
+    const preview = difficultCards.slice(0, 5);
     preview.forEach((c, idx) => {
       message += `<b>${idx + 1}. Q:</b> ${trunc(c.question)}\n`;
       message += `<b>R:</b> <tg-spoiler>${trunc(c.answer)}</tg-spoiler>\n\n`;
     });
 
-    if (flaggedCards.length > 5) {
-      message += `<i>...et ${flaggedCards.length - 5} autre(s)</i>\n\n`;
+    if (difficultCards.length > 5) {
+      message += `<i>...et ${difficultCards.length - 5} autre(s)</i>\n\n`;
     }
 
     message += `Prêt à réviser ? 🔥\n\n`;

@@ -96,7 +96,8 @@ async function run() {
     });
 
     message += `Prêt à réviser ? 🔥\n\n`;
-    message += `<a href="${process.env.APP_URL || 'https://memora.vercel.app'}">📖 Ouvrir Memora</a>`;
+    const appUrl = process.env.APP_URL || 'https://memora.vercel.app';
+    message += `<a href="${appUrl}?tab=library&filter=difficult">📖 Ouvrir Memora (Cartes difficiles)</a>`;
 
     console.log(`Sending message to Telegram for user ${userId}...`);
     

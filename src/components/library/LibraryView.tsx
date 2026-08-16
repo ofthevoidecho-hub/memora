@@ -22,8 +22,13 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
   onToggleFavorite,
   onToggleFlag,
 }) => {
+  const getInitialStatus = () => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('filter') || 'all';
+  };
+
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedStatus, setSelectedStatus] = useState<string>('all');
+  const [selectedStatus, setSelectedStatus] = useState<string>(getInitialStatus);
   const [selectedDeckId, setSelectedDeckId] = useState<string>('all');
   const [selectedTag, setSelectedTag] = useState<string>('all');
 

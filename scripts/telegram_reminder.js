@@ -96,8 +96,15 @@ async function run() {
     });
 
     message += `Prêt à réviser ? 🔥\n\n`;
-    const appUrl = process.env.APP_URL || 'https://memora.vercel.app';
-    message += `<a href="${appUrl}?tab=library&filter=difficult">📖 Ouvrir Memora (Cartes difficiles)</a>`;
+    try {
+      const url = new URL(process.env.APP_URL || 'https://memora.vercel.app');
+      url.searchParams.set('tab', 'library');
+      url.searchParams.set('filter', 'difficult');
+      message += `<a href="${url.toString()}">📖 Ouvrir Memora (Cartes difficiles)</a>`;
+    } catch (e) {
+      // Fallback in case APP_URL is totally malformed
+      message += `<a href="https://memora.vercel.app/?tab=library&filter=difficult">📖 Ouvrir Memora (Cartes difficiles)</a>`;
+    }
 
     console.log(`Sending message to Telegram for user ${userId}...`);
     

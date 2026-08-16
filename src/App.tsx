@@ -43,6 +43,7 @@ export default function App() {
   } = useMemoraState();
 
   const getInitialTab = (): ActiveTab => {
+    if (typeof window === 'undefined') return 'dashboard';
     const params = new URLSearchParams(window.location.search);
     const tab = params.get('tab');
     const validTabs: ActiveTab[] = ['dashboard', 'decks', 'review', 'library', 'import', 'statistics', 'settings'];

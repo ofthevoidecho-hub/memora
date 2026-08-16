@@ -23,6 +23,7 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
   onToggleFlag,
 }) => {
   const getInitialStatus = () => {
+    if (typeof window === 'undefined') return 'all';
     const params = new URLSearchParams(window.location.search);
     return params.get('filter') || 'all';
   };

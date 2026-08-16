@@ -44,8 +44,14 @@ export default function App() {
 
   const getInitialTab = (): ActiveTab => {
     if (typeof window === 'undefined') return 'dashboard';
-    const params = new URLSearchParams(window.location.search);
-    const tab = params.get('tab');
+    
+    // Check hash first, then fallback to search params
+    const hash = window.location.hash.slice(1);
+    const hashParams = new URLSearchParams(hash);
+    const searchParams = new URLSearchParams(window.location.search);
+    
+    const tab = hashParams.get('tab') || searchParams.get('tab');
+    
     const validTabs: ActiveTab[] = ['dashboard', 'decks', 'review', 'library', 'import', 'statistics', 'settings'];
     if (tab && validTabs.includes(tab as ActiveTab)) {
       return tab as ActiveTab;

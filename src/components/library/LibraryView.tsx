@@ -24,8 +24,12 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
 }) => {
   const getInitialStatus = () => {
     if (typeof window === 'undefined') return 'all';
-    const params = new URLSearchParams(window.location.search);
-    return params.get('filter') || 'all';
+    
+    const hash = window.location.hash.slice(1);
+    const hashParams = new URLSearchParams(hash);
+    const searchParams = new URLSearchParams(window.location.search);
+    
+    return hashParams.get('filter') || searchParams.get('filter') || 'all';
   };
 
   const [searchQuery, setSearchQuery] = useState('');

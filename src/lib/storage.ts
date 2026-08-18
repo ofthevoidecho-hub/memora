@@ -311,3 +311,64 @@ export async function syncToSupabase(userId: string | null | undefined, cards: C
     console.error('[Supabase Sync] Exception:', err);
   }
 }
+
+export async function fetchFromSupabase(userId: string) {
+  try {
+    // Fetch Decks
+    const { data: dbDecks, error: decksError } = await supabase
+      .from('decks')
+      .select('*')
+      .eq('user_id', userId);
+
+    if (decksError) {
+      console.error('[Supabase Fetch] Decks error:', decksError);
+    } else if (dbDecks && dbDecks.length > 0) {
+      const parsedDecks: Deck[] = dbDecks.map(d => ({
+        id: d.id,
+        title: d.title,
+        description: d.description || '',
+        folder: d.folder || 'Général',
+        color: d.color || 'indigo',
+        icon: d.icon || 'Layers',
+        telegramReminderEnabled: !!d.telegram_reminder_enabled,
+        createdAt: d.created_at,
+      }));
+      saveDecks(parsedDecks);
+    }
+
+    // Fetch Cards
+    const { data: dbCards, error: cardsError } = await supabase
+      .from('cards')
+      .select('*')
+      .eq('user_id', userId);
+
+    if (cardsError) {
+      console.error('[Supabase Fetch] Cards error:', cardsError);
+    } else if (dbCards && dbCards.length > 0) {
+      const parsedCards: Card[] = dbCards.map(c => ({
+        id: c.id,
+        deckId: c.deck_id,
+        question: c.question,
+        answer: c.answer,
+        tags: c.tags || [],
+        difficulty: c.difficulty,
+        ease: c.ease,
+        interval: c.interval,
+        repetitions: c.repetitions,
+        lapses: c.lapses,
+        stability: c.stability,
+        state: c.state,
+        favorite: !!c.favorite,
+        flagged: !!c.flagged,
+        dueDate: c.due_date,
+        createdAt: c.created_at,
+        updatedAt: c.updated_at,
+        lastReviewedAt: null,
+      }));
+      saveCards(parsedCards);
+    }
+  } catch (err) {
+    console.error('[Supabase Fetch] Exception:', err);
+  }
+}
+

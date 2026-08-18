@@ -175,18 +175,32 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         </div>
 
         {/* Difficult Cards */}
-        <div className="p-5 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-xs flex items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0">
-            <Award className="w-6 h-6" />
-          </div>
-          <div>
-            <div className="text-2xl font-black tracking-tight text-neutral-900 dark:text-white">
-              {difficultCardsCount}
+        <div className="p-5 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-xs flex flex-col gap-4">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0">
+              <Award className="w-6 h-6" />
             </div>
-            <div className="text-xs text-neutral-500 dark:text-neutral-400 font-medium mt-0.5">
-              Cartes difficiles
+            <div>
+              <div className="text-2xl font-black tracking-tight text-neutral-900 dark:text-white">
+                {difficultCardsCount}
+              </div>
+              <div className="text-xs text-neutral-500 dark:text-neutral-400 font-medium mt-0.5">
+                Cartes difficiles
+              </div>
             </div>
           </div>
+          {difficultCardsCount > 0 && (
+            <button
+              onClick={() => {
+                onSelectDeckForReview('difficult');
+                setActiveTab('review');
+              }}
+              className="w-full py-2 px-3 rounded-xl bg-rose-50 dark:bg-rose-900/40 hover:bg-rose-100 dark:hover:bg-rose-900/80 text-rose-700 dark:text-rose-300 font-semibold text-xs transition-colors flex items-center justify-center gap-1.5"
+            >
+              <Play className="w-3.5 h-3.5 fill-current" />
+              <span>Réviser maintenant</span>
+            </button>
+          )}
         </div>
       </div>
 

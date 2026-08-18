@@ -98,11 +98,10 @@ async function run() {
     message += `Prêt à réviser ? 🔥\n\n`;
     try {
       const url = new URL(process.env.APP_URL || 'https://memora.vercel.app');
-      // Use hash instead of query parameters to avoid server-side 500 errors with auth providers
-      message += `<a href="${url.toString()}#tab=library&filter=difficult">📖 Ouvrir Memora (Cartes difficiles)</a>`;
+      message += `<a href="${url.toString()}">📖 Ouvrir Memora</a>`;
     } catch (e) {
       // Fallback in case APP_URL is totally malformed
-      message += `<a href="https://memora.vercel.app/#tab=library&filter=difficult">📖 Ouvrir Memora (Cartes difficiles)</a>`;
+      message += `<a href="https://memora.vercel.app/">📖 Ouvrir Memora</a>`;
     }
 
     console.log(`Sending message to Telegram for user ${userId}...`);

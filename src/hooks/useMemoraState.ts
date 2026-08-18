@@ -15,6 +15,7 @@ import {
   resetReviewStats as storageResetReviewStats,
   storageEventBus,
   syncToSupabase,
+  fetchFromSupabase,
 } from '../lib/storage';
 import { calculateNextReview, isCardDue } from '../lib/spacedRepetition';
 import { registerServiceWorker, scheduleNotification, cancelNotification, checkAndFireOnAppLoad } from '../lib/notifications';
@@ -27,13 +28,25 @@ export function useMemoraState() {
   const [stats, setStats] = useState<UserStats>(loadStats);
 
   const { user } = useUser();
+  const [isDataLoaded, setIsDataLoaded] = useState(false);
+
+  // Initial Fetch from Supabase
+  useEffect(() => {
+    if (user) {
+      fetchFromSupabase(user.id).then(() => {
+        setIsDataLoaded(true);
+      });
+    } else {
+      setIsDataLoaded(true);
+    }
+  }, [user]);
 
   // Supabase Sync
   useEffect(() => {
-    if (user) {
+    if (user && isDataLoaded) {
       syncToSupabase(user.id, cards, decks);
     }
-  }, [user, cards, decks]);
+  }, [user, cards, decks, isDataLoaded]);
 
   // Computed helper counters
   const dueCards = cards.filter((c) => isCardDue(c));

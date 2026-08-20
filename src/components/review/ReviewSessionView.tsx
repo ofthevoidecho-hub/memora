@@ -59,6 +59,8 @@ export const ReviewSessionView: React.FC<ReviewSessionViewProps> = ({
 
   // Prepare session queue
   const prepareQueue = useCallback(() => {
+    if (sessionState !== 'briefing') return;
+
     let pool = cards;
     
     if (targetDeckId === 'difficult') {
@@ -97,7 +99,7 @@ export const ReviewSessionView: React.FC<ReviewSessionViewProps> = ({
     setCurrentIndex(0);
     setIsAnswerRevealed(false);
     setRatingCounts({ 1: 0, 2: 0, 3: 0, 4: 0 });
-  }, [cards, targetDeckId, settings.maxReviewsPerDay, isShuffleEnabled]);
+  }, [cards, targetDeckId, settings.maxReviewsPerDay, isShuffleEnabled, sessionState]);
 
   useEffect(() => {
     prepareQueue();

@@ -62,23 +62,24 @@ export const ReviewSessionView: React.FC<ReviewSessionViewProps> = ({
     if (sessionState !== 'briefing') return;
 
     let pool = cards;
+    let queue: Card[] = [];
     
     if (targetDeckId === 'difficult') {
       pool = cards.filter((c) => c.lapses > 1 || c.difficulty >= 7);
-      const queue = pool.slice(0, settings.maxReviewsPerDay || 100);
-      setOriginalQueue(queue);
+      queue = pool.slice(0, settings.maxReviewsPerDay || 100);
     } else {
       if (targetDeckId) {
         pool = cards.filter((c) => c.deckId === targetDeckId);
       }
       const dueList = pool.filter((c) => isCardDue(c));
-      const queue = dueList.slice(0, settings.maxReviewsPerDay || 100);
-      setOriginalQueue(queue);
+      queue = dueList.slice(0, settings.maxReviewsPerDay || 100);
     }
+    
+    setOriginalQueue(queue);
 
     if (isShuffleEnabled) {
-      setSessionQueue((prev) => {
-        const shuffled = [...originalQueue];
+      setSessionQueue(() => {
+        const shuffled = [...queue];
         for (let i = shuffled.length - 1; i > 0; i--) {
           const j = Math.floor(Math.random() * (i + 1));
           [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
@@ -86,14 +87,7 @@ export const ReviewSessionView: React.FC<ReviewSessionViewProps> = ({
         return shuffled;
       });
     } else {
-      // Defer to original queue after state update
-      setSessionQueue((prev) => {
-         // To avoid complex dependency on originalQueue during initial render,
-         // we just use the queue we computed right above.
-         return targetDeckId === 'difficult' 
-           ? pool.slice(0, settings.maxReviewsPerDay || 100)
-           : pool.filter(isCardDue).slice(0, settings.maxReviewsPerDay || 100);
-      });
+      setSessionQueue(queue);
     }
 
     setCurrentIndex(0);

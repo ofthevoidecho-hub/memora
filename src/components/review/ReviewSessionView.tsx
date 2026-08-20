@@ -57,6 +57,12 @@ export const ReviewSessionView: React.FC<ReviewSessionViewProps> = ({
 
   const selectedDeck = targetDeckId ? decks.find((d) => d.id === targetDeckId) : null;
 
+  // Extract the numeric part from a card ID for natural ordering (e.g. "inf65" -> 65)
+  const getCardSortKey = (card: Card): number => {
+    const match = card.id.match(/\d+/);
+    return match ? parseInt(match[0], 10) : 0;
+  };
+
   // Prepare session queue
   const prepareQueue = useCallback(() => {
     if (sessionState !== 'briefing') return;
@@ -74,12 +80,15 @@ export const ReviewSessionView: React.FC<ReviewSessionViewProps> = ({
       const dueList = pool.filter((c) => isCardDue(c));
       queue = dueList.slice(0, settings.maxReviewsPerDay || 100);
     }
+
+    // Always sort queue by numeric card ID so cards appear in correct order when shuffle is off
+    const sortedQueue = [...queue].sort((a, b) => getCardSortKey(a) - getCardSortKey(b));
     
-    setOriginalQueue(queue);
+    setOriginalQueue(sortedQueue);
 
     if (isShuffleEnabled) {
       setSessionQueue(() => {
-        const shuffled = [...queue];
+        const shuffled = [...sortedQueue];
         for (let i = shuffled.length - 1; i > 0; i--) {
           const j = Math.floor(Math.random() * (i + 1));
           [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
@@ -87,7 +96,7 @@ export const ReviewSessionView: React.FC<ReviewSessionViewProps> = ({
         return shuffled;
       });
     } else {
-      setSessionQueue(queue);
+      setSessionQueue(sortedQueue);
     }
 
     setCurrentIndex(0);

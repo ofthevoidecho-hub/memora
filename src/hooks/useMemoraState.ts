@@ -231,8 +231,10 @@ export function useMemoraState() {
 
   const deleteDeck = useCallback(
     (id: string) => {
-      saveDecks(decks.filter((d) => d.id !== id));
-      saveCards(cards.filter((c) => c.deckId !== id));
+      // Supprimer aussi le deck difficile associé s'il existe
+      const difficultDeckId = `difficult_${id}`;
+      saveDecks(decks.filter((d) => d.id !== id && d.id !== difficultDeckId));
+      saveCards(cards.filter((c) => c.deckId !== id && c.deckId !== difficultDeckId));
     },
     [decks, cards]
   );
@@ -269,6 +271,77 @@ export function useMemoraState() {
       // Save updated card
       const newCards = cards.map((c) => (c.id === cardId ? updatedCard : c));
       saveCards(newCards);
+
+      // -----------------------------------------------------------------------
+      // Difficult Deck Sync
+      // rating 2 (Difficile) => ajouter/maintenir la carte dans le deck difficile
+      // rating 3 ou 4        => retirer la carte du deck difficile si présente
+      // -----------------------------------------------------------------------
+      const sourceDeckId = card.deckId;
+      // Ne pas créer un deck difficile pour un deck déjà difficile
+      if (!sourceDeckId.startsWith('difficult_')) {
+        const difficultDeckId = `difficult_${sourceDeckId}`;
+        // ID de la copie miroir dans le deck difficile
+        const mirrorCardId = `difficult_card_${cardId}`;
+
+        const currentDecks = loadDecks();
+        const currentAllCards = loadCards();
+
+        if (rating === 2) {
+          // --- Créer le deck difficile si besoin ---
+          const deckExists = currentDecks.some((d) => d.id === difficultDeckId);
+          let updatedDecks = currentDecks;
+          if (!deckExists) {
+            const sourceD = currentDecks.find((d) => d.id === sourceDeckId);
+            const newDifficultDeck: Deck = {
+              id: difficultDeckId,
+              title: `⚠️ Difficile – ${sourceD?.title ?? 'Deck'}`,
+              description: 'Cartes notées difficiles — à réviser en priorité.',
+              folder: sourceD?.folder ?? 'Général',
+              color: 'amber',
+              icon: 'AlertTriangle',
+              createdAt: nowISO,
+            };
+            updatedDecks = [...currentDecks, newDifficultDeck];
+            saveDecks(updatedDecks);
+          }
+
+          // --- Ajouter ou mettre à jour la copie miroir ---
+          const mirrorExists = currentAllCards.some((c) => c.id === mirrorCardId);
+          if (!mirrorExists) {
+            const mirrorCard: Card = {
+              ...updatedCard,
+              id: mirrorCardId,
+              deckId: difficultDeckId,
+              // Remettre la carte en état "new" dans le deck difficile pour la réviser
+              state: 'new',
+              interval: 0,
+              repetitions: 0,
+              lapses: 0,
+              dueDate: nowISO,
+              lastReviewedAt: null,
+              ease: 2.5,
+              stability: 2.0,
+            };
+            const withMirror = [...currentAllCards, mirrorCard];
+            saveCards(withMirror);
+          }
+        } else if (rating === 3 || rating === 4) {
+          // --- Supprimer la copie miroir si elle existe ---
+          const mirrorExists = currentAllCards.some((c) => c.id === mirrorCardId);
+          if (mirrorExists) {
+            const withoutMirror = currentAllCards.filter((c) => c.id !== mirrorCardId);
+            saveCards(withoutMirror);
+
+            // Supprimer le deck difficile s'il est maintenant vide
+            const remainingDifficultCards = withoutMirror.filter((c) => c.deckId === difficultDeckId);
+            if (remainingDifficultCards.length === 0) {
+              const cleanDecks = currentDecks.filter((d) => d.id !== difficultDeckId);
+              saveDecks(cleanDecks);
+            }
+          }
+        }
+      }
 
       // Save Review Log
       const log: ReviewLog = {

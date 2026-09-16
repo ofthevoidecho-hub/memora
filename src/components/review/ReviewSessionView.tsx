@@ -99,7 +99,9 @@ export const ReviewSessionView: React.FC<ReviewSessionViewProps> = ({
       setSessionQueue(sortedQueue);
     }
 
-    setCurrentIndex(0);
+    const storedIndex = localStorage.getItem(`memora_saved_index_${targetDeckId || 'all'}`);
+    const initialIndex = storedIndex ? parseInt(storedIndex, 10) : 0;
+    setCurrentIndex(initialIndex < sortedQueue.length ? initialIndex : 0);
     setIsAnswerRevealed(false);
     setRatingCounts({ 1: 0, 2: 0, 3: 0, 4: 0 });
   }, [cards, targetDeckId, settings.maxReviewsPerDay, isShuffleEnabled, sessionState]);
@@ -118,6 +120,13 @@ export const ReviewSessionView: React.FC<ReviewSessionViewProps> = ({
     }
     return () => clearInterval(timer);
   }, [sessionState, sessionStartTime]);
+
+  // Save current index to localStorage
+  useEffect(() => {
+    if (sessionState === 'active') {
+      localStorage.setItem(`memora_saved_index_${targetDeckId || 'all'}`, currentIndex.toString());
+    }
+  }, [currentIndex, sessionState, targetDeckId]);
 
   const startSession = () => {
     if (sessionQueue.length === 0) return;
@@ -193,6 +202,7 @@ export const ReviewSessionView: React.FC<ReviewSessionViewProps> = ({
       cardStartTimeRef.current = Date.now();
     } else {
       // Complete Session
+      localStorage.removeItem(`memora_saved_index_${targetDeckId || 'all'}`);
       setSessionState('completed');
       try {
         confetti({
@@ -309,6 +319,25 @@ export const ReviewSessionView: React.FC<ReviewSessionViewProps> = ({
                   <Shuffle className={`w-3.5 h-3.5 ${isShuffleEnabled ? 'text-white' : 'text-indigo-500'}`} />
                   <span>Mode aléatoire : {isShuffleEnabled ? 'Activé (ON)' : 'Désactivé (OFF)'}</span>
                 </button>
+              </div>
+
+              <div className="flex flex-col items-center gap-2 pt-2 border-t border-neutral-100 dark:border-neutral-800 mt-4">
+                <label className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
+                  Commencer à la question N° :
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  max={sessionQueue.length}
+                  value={currentIndex + 1}
+                  onChange={(e) => {
+                    const val = parseInt(e.target.value, 10);
+                    if (!isNaN(val) && val >= 1 && val <= sessionQueue.length) {
+                      setCurrentIndex(val - 1);
+                    }
+                  }}
+                  className="w-20 px-3 py-1.5 text-center rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
               </div>
             </div>
           ) : (
@@ -475,6 +504,7 @@ export const ReviewSessionView: React.FC<ReviewSessionViewProps> = ({
           <button
             onClick={() => {
               if (confirm('Voulez-vous quitter la session en cours ?')) {
+                localStorage.setItem(`memora_saved_index_${targetDeckId || 'all'}`, currentIndex.toString());
                 setSessionState('briefing');
               }
             }}

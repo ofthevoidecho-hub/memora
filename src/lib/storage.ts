@@ -3,11 +3,11 @@ import { INITIAL_CARDS, INITIAL_DECKS, INITIAL_SETTINGS, INITIAL_STATS } from '.
 import { supabase } from './supabase';
 
 const STORAGE_KEYS = {
-  DECKS: 'memora_decks_v1',
-  CARDS: 'memora_cards_v1',
-  LOGS: 'memora_review_logs_v1',
-  SETTINGS: 'memora_settings_v1',
-  STATS: 'memora_stats_v1',
+  DECKS: 'memora_decks_v2',
+  CARDS: 'memora_cards_v2',
+  LOGS: 'memora_review_logs_v2',
+  SETTINGS: 'memora_settings_v2',
+  STATS: 'memora_stats_v2',
 };
 
 // ---------------------------------------------------------------------------

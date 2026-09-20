@@ -312,6 +312,74 @@ export async function syncToSupabase(userId: string | null | undefined, cards: C
   }
 }
 
+/**
+ * Sync user stats (streak, total reviews, history) to Supabase.
+ * This allows multi-device continuity: stats are loaded from Supabase on login.
+ */
+export async function syncStatsToSupabase(userId: string | null | undefined, stats: UserStats): Promise<void> {
+  if (!userId) return;
+
+  try {
+    const { error } = await supabase.from('user_stats').upsert({
+      user_id: userId,
+      streak: stats.streak,
+      total_reviews_count: stats.totalReviewsCount,
+      total_time_spent_seconds: stats.totalTimeSpentSeconds,
+      last_active_date: stats.lastActiveDate,
+      history_log: stats.historyLog,
+      updated_at: new Date().toISOString(),
+    }, { onConflict: 'user_id' });
+
+    if (error) console.error('[Supabase Sync] Stats error:', error);
+  } catch (err) {
+    console.error('[Supabase Sync] Stats exception:', err);
+  }
+}
+
+/**
+ * Fetch user stats from Supabase and merge with local stats (take the most recent).
+ */
+export async function fetchStatsFromSupabase(userId: string): Promise<UserStats | null> {
+  try {
+    const { data, error } = await supabase
+      .from('user_stats')
+      .select('*')
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    if (error) {
+      console.error('[Supabase Fetch] Stats error:', error);
+      return null;
+    }
+
+    if (!data) return null;
+
+    const remoteStats: UserStats = {
+      streak: data.streak ?? 0,
+      totalReviewsCount: data.total_reviews_count ?? 0,
+      totalTimeSpentSeconds: data.total_time_spent_seconds ?? 0,
+      lastActiveDate: data.last_active_date ?? null,
+      historyLog: (data.history_log as Record<string, number>) ?? {},
+    };
+
+    // Merge: take the higher streak / review count to avoid data loss
+    const localStats = loadStats();
+    const merged: UserStats = {
+      streak: Math.max(remoteStats.streak, localStats.streak),
+      totalReviewsCount: Math.max(remoteStats.totalReviewsCount, localStats.totalReviewsCount),
+      totalTimeSpentSeconds: Math.max(remoteStats.totalTimeSpentSeconds, localStats.totalTimeSpentSeconds),
+      lastActiveDate: remoteStats.lastActiveDate ?? localStats.lastActiveDate,
+      historyLog: { ...localStats.historyLog, ...remoteStats.historyLog },
+    };
+
+    saveStats(merged);
+    return merged;
+  } catch (err) {
+    console.error('[Supabase Fetch] Stats exception:', err);
+    return null;
+  }
+}
+
 export async function fetchFromSupabase(userId: string) {
   try {
     // Fetch Decks

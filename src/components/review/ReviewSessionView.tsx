@@ -387,22 +387,26 @@ export const ReviewSessionView: React.FC<ReviewSessionViewProps> = ({
             </p>
           </div>
 
+          <p className="text-xs text-neutral-500 dark:text-neutral-400">
+            <strong className="text-neutral-900 dark:text-white">{sessionQueue.length}</strong> carte{sessionQueue.length > 1 ? 's' : ''} révisée{sessionQueue.length > 1 ? 's' : ''}
+          </p>
+
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 py-4 border-y border-neutral-100 dark:border-neutral-800 text-xs">
-            <div className="p-3 rounded-2xl bg-neutral-50 dark:bg-neutral-800/50">
-              <span className="block text-[10px] text-neutral-400 font-semibold uppercase">Révisées</span>
-              <span className="text-lg font-bold text-neutral-900 dark:text-white">{sessionQueue.length}</span>
+            <div className="p-3 rounded-2xl bg-rose-500/10 border border-rose-500/20">
+              <span className="block text-[10px] text-rose-600 dark:text-rose-400 font-semibold uppercase">À revoir</span>
+              <span className="text-lg font-bold text-rose-600 dark:text-rose-400">{ratingCounts[1]}</span>
             </div>
-            <div className="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/20">
-              <span className="block text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold uppercase">Faciles</span>
-              <span className="text-lg font-bold text-emerald-600 dark:text-emerald-400">{ratingCounts[4]}</span>
+            <div className="p-3 rounded-2xl bg-amber-500/10 border border-amber-500/20">
+              <span className="block text-[10px] text-amber-600 dark:text-amber-400 font-semibold uppercase">Difficile</span>
+              <span className="text-lg font-bold text-amber-600 dark:text-amber-400">{ratingCounts[2]}</span>
             </div>
             <div className="p-3 rounded-2xl bg-indigo-500/10 border border-indigo-500/20">
               <span className="block text-[10px] text-indigo-600 dark:text-indigo-400 font-semibold uppercase">Bien</span>
               <span className="text-lg font-bold text-indigo-600 dark:text-indigo-400">{ratingCounts[3]}</span>
             </div>
-            <div className="p-3 rounded-2xl bg-rose-500/10 border border-rose-500/20">
-              <span className="block text-[10px] text-rose-600 dark:text-rose-400 font-semibold uppercase">À revoir</span>
-              <span className="text-lg font-bold text-rose-600 dark:text-rose-400">{ratingCounts[1]}</span>
+            <div className="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/20">
+              <span className="block text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold uppercase">Facile</span>
+              <span className="text-lg font-bold text-emerald-600 dark:text-emerald-400">{ratingCounts[4]}</span>
             </div>
           </div>
 

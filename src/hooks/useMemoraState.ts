@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useUser } from '@clerk/clerk-react';
 import { Card, CardRating, Deck, ReviewLog, UserSettings, UserStats } from '../types';
 import {
@@ -15,8 +15,11 @@ import {
   resetReviewStats as storageResetReviewStats,
   storageEventBus,
   syncToSupabase,
+  syncStatsToSupabase,
   fetchFromSupabase,
+  fetchStatsFromSupabase,
 } from '../lib/storage';
+import { supabase } from '../lib/supabase';
 import { calculateNextReview, isCardDue } from '../lib/spacedRepetition';
 import { registerServiceWorker, scheduleNotification, cancelNotification, checkAndFireOnAppLoad } from '../lib/notifications';
 
@@ -30,10 +33,16 @@ export function useMemoraState() {
   const { user } = useUser();
   const [isDataLoaded, setIsDataLoaded] = useState(false);
 
-  // Initial Fetch from Supabase
+  // Ref to track if realtime channel is already subscribed
+  const realtimeChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+
+  // Initial Fetch from Supabase (cards, decks, and stats)
   useEffect(() => {
     if (user) {
-      fetchFromSupabase(user.id).then(() => {
+      Promise.all([
+        fetchFromSupabase(user.id),
+        fetchStatsFromSupabase(user.id),
+      ]).then(() => {
         setIsDataLoaded(true);
       });
     } else {
@@ -41,12 +50,68 @@ export function useMemoraState() {
     }
   }, [user]);
 
-  // Supabase Sync
+  // Supabase Sync — cards & decks after every change
   useEffect(() => {
     if (user && isDataLoaded) {
       syncToSupabase(user.id, cards, decks);
     }
   }, [user, cards, decks, isDataLoaded]);
+
+  // Supabase Sync — stats after every change
+  useEffect(() => {
+    if (user && isDataLoaded) {
+      syncStatsToSupabase(user.id, stats);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, isDataLoaded, stats.totalReviewsCount, stats.streak, stats.lastActiveDate]);
+
+  // Supabase Realtime — listen for card updates from other devices
+  useEffect(() => {
+    if (!user) return;
+
+    // Avoid duplicate subscriptions
+    if (realtimeChannelRef.current) {
+      supabase.removeChannel(realtimeChannelRef.current);
+    }
+
+    const channel = supabase
+      .channel(`cards-sync-${user.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'cards',
+          filter: `user_id=eq.${user.id}`,
+        },
+        (payload) => {
+          // Another device updated a card — re-fetch all cards from Supabase
+          console.log('[Realtime] Card change detected from another device:', payload.eventType);
+          fetchFromSupabase(user.id);
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'user_stats',
+          filter: `user_id=eq.${user.id}`,
+        },
+        (payload) => {
+          console.log('[Realtime] Stats change detected from another device:', payload.eventType);
+          fetchStatsFromSupabase(user.id);
+        }
+      )
+      .subscribe();
+
+    realtimeChannelRef.current = channel;
+
+    return () => {
+      supabase.removeChannel(channel);
+      realtimeChannelRef.current = null;
+    };
+  }, [user]);
 
   // Computed helper counters
   const dueCards = cards.filter((c) => isCardDue(c));

@@ -133,7 +133,9 @@ export const DecksView: React.FC<DecksViewProps> = ({
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
         {filteredDecks.map((deck) => {
           const stats = getDeckStats(deck.id, cards);
-          const progressPercent = stats.total > 0 ? Math.round(((stats.total - stats.due) / stats.total) * 100) : 100;
+          // Use mastered cards to show real learning progress
+          // (due = total when isCardDue always returns true, so we use mastered instead)
+          const progressPercent = stats.total > 0 ? Math.round((stats.mastered / stats.total) * 100) : 0;
 
           return (
             <div
@@ -183,14 +185,18 @@ export const DecksView: React.FC<DecksViewProps> = ({
 
               {/* Progress & Card Stats */}
               <div className="space-y-3 pt-3 border-t border-neutral-100 dark:border-neutral-800">
-                <div className="grid grid-cols-2 gap-2 text-xs">
+                <div className="grid grid-cols-3 gap-2 text-xs">
                   <div className="p-2.5 rounded-xl bg-neutral-50 dark:bg-neutral-800/50 text-center">
-                    <span className="block text-[10px] text-neutral-400 uppercase font-semibold">Total Cartes</span>
+                    <span className="block text-[10px] text-neutral-400 uppercase font-semibold">Total</span>
                     <span className="text-base font-bold text-neutral-900 dark:text-white">{stats.total}</span>
                   </div>
-                  <div className="p-2.5 rounded-xl bg-amber-500/10 text-center border border-amber-500/20">
-                    <span className="block text-[10px] text-amber-600 dark:text-amber-400 uppercase font-semibold">À réviser</span>
-                    <span className="text-base font-bold text-amber-600 dark:text-amber-400">{stats.due}</span>
+                  <div className="p-2.5 rounded-xl bg-indigo-500/10 text-center border border-indigo-500/20">
+                    <span className="block text-[10px] text-indigo-600 dark:text-indigo-400 uppercase font-semibold">En cours</span>
+                    <span className="text-base font-bold text-indigo-600 dark:text-indigo-400">{stats.learning}</span>
+                  </div>
+                  <div className="p-2.5 rounded-xl bg-emerald-500/10 text-center border border-emerald-500/20">
+                    <span className="block text-[10px] text-emerald-600 dark:text-emerald-400 uppercase font-semibold">Maîtrisées</span>
+                    <span className="text-base font-bold text-emerald-600 dark:text-emerald-400">{stats.mastered}</span>
                   </div>
                 </div>
 
@@ -215,7 +221,7 @@ export const DecksView: React.FC<DecksViewProps> = ({
                   className="w-full py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <Play className="w-3.5 h-3.5 fill-white" />
-                  <span>Réviser ce deck ({stats.due})</span>
+                  <span>Réviser ce deck ({stats.total})</span>
                 </button>
               </div>
             </div>

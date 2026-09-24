@@ -318,6 +318,7 @@ export function useMemoraState() {
         };
       });
       saveCards(updatedCards);
+      localStorage.removeItem(`memora_saved_index_${deckId}`);
     },
     [cards]
   );

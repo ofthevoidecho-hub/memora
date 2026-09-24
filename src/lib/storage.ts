@@ -242,6 +242,7 @@ export function resetDeckProgress(deckId: string) {
     };
   });
   saveCards(updatedCards);
+  localStorage.removeItem(`memora_saved_index_${deckId}`);
 }
 
 export function resetAllData() {

@@ -112,8 +112,8 @@ export function getFormattedNextInterval(card: Card, rating: CardRating): string
  * Helper to check if a card is due for review today
  */
 export function isCardDue(card: Card, nowISO: string = new Date().toISOString()): boolean {
-  // Spaced repetition disabled as requested - all cards are always due
-  return true;
+  if (card.state === 'new') return true;
+  return new Date(card.dueDate) <= new Date(nowISO);
 }
 
 /**

@@ -1,0 +1,288 @@
+// push_blindee.mjs
+import { createClient } from '@supabase/supabase-js';
+
+const SUPABASE_URL = 'https://rwcdvoliowjmoaunarod.supabase.co';
+const SUPABASE_KEY =
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ3Y2R2b2xpb3dqbW9hdW5hcm9kIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NjYwNjE4OCwiZXhwIjoyMTAyMTgyMTg4fQ.yOQm8Ujs_QU4PrkCLVFARTg-Is6lt-nWgY_RmFuEn7s';
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const DECK_ID = 'deck-arme-blindee';
+const USER_ID = 'user_3HjjzpAUtcVDhMKLO8L3GcCw3Dv';
+const now = new Date().toISOString();
+
+function card(id, question, answer, tags) {
+  return {
+    id,
+    user_id: USER_ID,
+    deck_id: DECK_ID,
+    question,
+    answer,
+    tags,
+    difficulty: 5,
+    ease: 2.5,
+    interval: 0,
+    repetitions: 0,
+    lapses: 0,
+    stability: 2.0,
+    state: 'new',
+    favorite: false,
+    flagged: false,
+    due_date: now,
+    created_at: now,
+    updated_at: now,
+  };
+}
+
+const DECK = {
+  id: DECK_ID,
+  user_id: USER_ID,
+  title: 'Arme Blindée',
+  description: "Rôle, organisation, emploi et missions de l'Arme Blindée, de la BRB et du RRC.",
+  folder: 'Arme Blindée',
+  color: 'amber',
+  icon: 'Shield',
+  telegram_reminder_enabled: false,
+  created_at: now,
+};
+
+const CARDS = [
+  card('ab1', "Q1 : Rôle Général de l’Arme Blindée.",
+    "Vu les caractéristiques que lui procurent les matériels en dotation, l’AB a un double rôle : EP\n\tEmporter la décision en exécutant des missions de Destruction ;\n\tPréparer et accompagner l'action de forces en remplissant des missions de Sureté.",
+    []),
+  card('ab2', "Q2 : Organisation et Structure de l’Arme Blindée.",
+    "\tInspection :\n           Inspecteur, Inspecteur Adjoint et (08) Divisions :                                                           TRRIIP-GM      \n-\tTechnique ; \n-\tRH ;\n-\tRD ;\n-\tInstruction ;\n-\tInformatique ;\n-\tPlanification ;\n-\tGCD ;\n-\tMCPO.\n\tUnités :\n           Des BRBs, Une BMI et des RRC. Les GU (BRB et BMI) sont organisées suivant une structure ternaire :              \n         - BRB :      - (01) GCAS ;\n- (03) Groupes d’Escadrons Blindés (GEB).\n         - BMI :      - (01) GCAS ;\n- (03) Groupes d’Escadrons Mécanisés (GEM).\n         - RRC :     - (01) ECS ;\n- (04) Escadrons de chars ;\n- (01) Escadron Mécanisé ;\n- (01) Escadron Missile A/C.\n\tERB :    -Formation initiale et continue de l’ensemble du personnel de l’Arme ;                  FOIS\n -Organisation des stages à caractère spécifique au profit des :\n-\tPersonnels des Armes et Services des FAR ;\n-\tGrandes écoles militaires et paramilitaires ;\n-\tStagiaires des pays frères et amis.\n                        -Eventuellement, des missions particulières en tant qu’unité d’Intervention.\n -Participation à la phase de spécialisation du Service Militaire.",
+    []),
+  card('ab3', "Q3 : Citer brièvement les Caractéristiques de l’AB.",
+    "Dotée de chars puissamment armés, extrêmement mobiles et riches en moyens trans, l’Arme Blindée se caractérise par :\n\tVitesse : Vise à réduire les délais nécessaires à l’engagement de l’unité blindée.      VSPP\n\tSouplesse : Résulte de la vitesse et de la fluidité des moyens bien articulés, et se traduit par l’aptitude à changer rapidement de direction et de formation.\n\tPuissance : constituée par les canons dont sont dotées les unités blindées et les missiles AC dont sont équipées certaines formations élémentaires.\n\tProtection : Plate-forme mobile, le char doit mener son combat malgré les attaques des agents destructeurs du champ de bataille.\nVITESSE",
+    []),
+  card('ab4', "Q4 : Que vise la vitesse et de quoi dépend-elle.",
+    "La vitesse vise à réduire les délais d’engagement. Elle dépend de :                                                                     V-TOCF\n\tVitesse des moyens de combat ;                                                               \n\tMoyens Transmissions mis en œuvre ;\n\tOrganisation de la vitesse ;\n\tMéthode de Commandement ;\n\tCapacité de Franchissement.\nSOUPLESSE",
+    []),
+  card('ab5', "Q5 : Par quoi se Traduit la Souplesse.",
+    "Par l’Aptitude à changer rapidement de direction et de formation. A ce titre, les véhicules blindés Combinent aisément des actions de face et de flancs et peuvent s’Etaler largement sur une zone pour la reconnaitre ou se Concentrer brusquement en un point là où on veut faire l’effort, pour ensuite Reprendre un dispositif aéré, Absorber les moyens donnés en renforcement, et Passer sans délais à la disposition d’une unité.                                                                                        A-CECRAP",
+    []),
+  card('ab6', "Q6 : De quoi Résulte la Souplesse.",
+    "\tVitesse ;\n\tFluidité des moyens bien articulés. D’où la nécessité de :\n\tAvoir des Unités largement dotées en personnel et moyens de Cdmt.\n\tAvoir des Personnels qualifiés, entraînés et ayant l’esprit ouvert.\n\tOrganiser le Cdmt avant chaque opération et bien répartir les moyens trans.\nPUISSANCE",
+    []),
+  card('ab7', "Q7 : Par quoi se Mesure la Puissance du canon.",
+    "\tAptitude à tirer juste ;                                                                                                     ARC\n\tRapidité à l’ouverture de feu ;\n\tCapacité de perforation très élevée de ses projectiles.",
+    []),
+  card('ab8', "Q8 : De quoi dépend la Puissance du Canon.",
+    "Dépend de la Qualité des dispositifs de mise en œuvre qui doivent permettre :                    Q-RASPC\n\tRecherche et identification des objectifs ;\n\tAppréciation rapide et juste des distances ;\n\tStabilité dans le pointage ;\n\tPrécision dans le tir ;\n\tCadence de tir élevée.",
+    []),
+  card('ab9', "Q9 : De quoi dépend la Puissance de l’Arme Blindée.",
+    "\tQualité des dispositifs de mise en œuvre.                                                                Q-POM \n\tPuissance des canons ;\n\tOrganisation des unités ;\n\tMissiles et Armement secondaire.",
+    []),
+  card('ab10', "Q10 : Quel est le rôle de l’Armement secondaire dans l’AB.",
+    "\tTraiter les Objectifs à distance limitée, ou non justiciables à des tirs au canon ;\n\tAssurer la Défense Rapprochée des unités contre les dangers terrestres et aériens.",
+    []),
+  card('ab11', "Q11 : Sur quoi a porté l’Evolution de la puissance de l’AB.",
+    "-Augmentation des calibres des canons ;\n-Modification de la nature des projectiles (du boulet à l'obus à charge creuse et obus flèche) ;\n-Progrès en matière d’appréciation des distances (recours aux télémètres optiques et à laser).",
+    []),
+  card('ab12', "Q12 : Sur quoi est basée l’Organisation de la puissance de l'AB.",
+    "\tAide réciproque fournie par les moyens au combat (combinaison feu-mouvement) ;\n\tAppui des autres Armes qui améliore la puissance (Mécanisés, Artillerie, ALAT et Génie) ;\n\tEffet de masse (engagement sans rupture des liens organiques de Cdmt).\nPROTECTION",
+    []),
+  card('ab13', "Q13 : De quoi est Fonction la protection et quel est le meilleur moyen pour se protéger.",
+    "La protection est fonction de :                                                                                                 MAF-MAP \n•\tMobilité ;\n•\tAmélioration des blindages ;\n•\tFaible encombrement des engins.\n     Une protection efficace repose sur :        \n•\tMise à l’abri des coups directs et des éclats ;\n•\tAtténuation de l'effet de l’obus flèche ;\n•\tProtection contre les effets NBC.",
+    []),
+  card('ab14', "Q14 : Sur quoi porte l'Evolution de la protection.",
+    "\tProtection frontale et latérale par recours aux matériaux composites et blindages actifs ;       PPR\n\tPressurisation et Organisation du compartimentage des chars ;                             \n\tRéduction de la silhouette des engins.",
+    []),
+  card('ab15', "Q15 : Comment la protection est devenue plus Active.",
+    "Grâce à de nouveaux systèmes de protection contre les missiles et les roquettes antichars, tels que les systèmes «Trophy» et «Shtora». Ces systèmes utilisent des capteurs pour détecter les ogives ciblant le char. Une fois ces ogives détectées, une roquette défensive est tirée automatiquement par le char afin qu’elle explose près de la menace éliminant totalement son effet sur l’engin blindé.\n\n\nII-EMPLOI ET MISSIONS",
+    []),
+  card('ab16', "Q16 : Quelles sont les Limites et Contraintes de l’AB.",
+    "LIMITES :                                                                                                                                              TD-SP\n\tTerrain : Particulièrement terrains compartimentés et coupés. (Réduction de mobilité et souplesse).\n\tDispositifs : Les dispositifs resserrés ou sans profondeur réduisent les possibilités de manœuvre et augmentent la vulnérabilité (soumettant l’UB aux coups ENI avant même le début de l’engagement).\nCONTRAINTES :\n\tSoutien logistique : La liberté d’action des unités blindées dépend de la logistique qui est à l’origine même de la notion de permanence de l’action. \n\tPrise en compte des caractéristiques des autres Armes : Le chef IA devra choisir un mode d'action qui rend compatible le rythme des blindés avec les capacités des Armes d'appui.",
+    []),
+  card('ab17', "Q17 : Quels sont les Principes d'emploi de l’AB (Les Règles d’emploi de l’AB).",
+    "Emploi en Masse : Sauf pour missions de renseignement (discrétion, souplesse et fluidité), le chef blindé doit s’efforcer d’engager massivement ses chars, l’engagement par \"petits paquets\" est à éviter.\nEmploi Organique : Pour préserver la cohésion des formations blindées, nécessaire au rythme rapide de la manœuvre et à leur efficacité, il faut s’efforcer de les employer organiquement.\n \n\tPeloton indissociable.\n\n\tEscadron échelon combat.\n\tGrpmt échelon commandement.",
+    []),
+  card('ab18', "Q18 : Quel est le Cadre d’emploi de l’AB.",
+    "Soit au sein de GU Blindée menant ainsi l’Action elle-même de bout en bout ;\nSoit au sein de GU Terrestre dont elle Renforce la puissance et Accroît le rythme.",
+    []),
+  card('ab19', "Q19 : Quel est l’Objectif recherché avec les missions à dominante Sûreté.",
+    "Préparent et Accompagnent généralement l'action de force, leur objectif est double :\n\tAcquérir et Tenir à jour les connaissances sur l’ENI, les amis et le milieu (Renseignement) ;\n\tS’Opposer à une action éventuelle de l’ENI menaçant l’action principale amie (Couverture).",
+    []),
+  card('ab20', "Q20 : Quel est l’Objectif recherché avec les missions à dominante Destruction.",
+    "La Manœuvre Combine feu-mouvement en vue de :\n\tMettre hors d'usage ou de combat des matériels ou formations ENI ;\n\tPoursuivre, après rupture du dispositif ENI, sa désorganisation dans la profondeur.",
+    []),
+  card('ab21', "Q21 : Comment s’imbriquent les missions de sûreté et de destruction.",
+    "Les missions à dominante sûreté préparent et accompagnent les missions à dominante destruction. Ainsi, ces missions sont indissociables. Pour remplir des missions destruction, le chef a besoin de :\nRenseignement pour concevoir sa manœuvre et contrecarrer les actions adverses (Renseignement lointain), et pour conduire sa manœuvre (Renseignement de contact) ;\nCouverture pour s’opposer à une éventuelle action ennemie menaçant l’action principale amie.",
+    []),
+  card('ab22', "Q22 : Missions de l’AB.",
+    "Missions à dominante sûreté :                                                                                       JDR-C\n\tRenseignement :  Jalonnement, Découverte, Reconnaissance.\n\tCouverture : Mission d’Avant-garde, Mission de Flanc-garde, Mission d’Arrière-garde.\nMissions à dominante destruction :                                                                 RAPE-DFCCC-ZN\n\tCombat Offensif : Raid, Attaque, Poursuite, Exploitation.\n\tCombat Défensif : Défense ferme, Freinage, CATT, C.ARR, Cbt sur arrières ENI.\n\tAutres formes de combat : Cbt en Zone Urbaine, Cbt de Nuit.\n\nMISSIONS DE RENSEIGNEMENT",
+    []),
+  card('ab23', "Q23 : JALONNEMENT.",
+    "Consiste, lors d’une action retardatrice, à Garder le contact avec l’ENI pour renseigner le Cdmt.                                                                                                             \n\tSurveillance continue en vue de renseigner sur un ENI en mouvement ;                      G-SAC\n\tAcquisition du renseignement essentiellement par l’observation ;\n\tConditionné par le rythme de la poussée adverse.",
+    []),
+  card('ab24', "Q24 : DECOUVERTE.",
+    "\tRechercher le renseignement au plus loin ;                                                              RC-PVD\n\tCombat n’y est recherché que s’il est le seul moyen d’acquérir le renseignement, ou se dégager de l'emprise   adverse.\nIl s'agit de :\n\tPréciser les renseignements sur l'ENI ;\n\tAccent est mis sur la Vitesse ;\n\tDécouverte est terminée dès que l'ENI est décelé.",
+    []),
+  card('ab25', "Q25 : RECONNAISSANCE.",
+    "\tPrendre le contact et le préciser ;                                                                                  3P2RD\n\tPrise de contact s’effectue sous forme d’Embuscades ou de CARR ;\n\tRenseignement de contact sera plus Précis que les moyens utilisés seraient puissants ;\n\tRechercher les renseignements en engageant éventuellement le combat ;\n\tRésistances légères sont bousculées pour gagner en vitesse ;\n\tDéclenchement AC se fera par surprise.",
+    []),
+  card('ab26', "Q26 : COUVERTURE.",
+    "Suivant la place occupée par les éléments de la couverture, il s'agit de missions d’avant-garde, d’arrière-garde, ou de flanc-garde. Visant à Gêner ou Arrêter les actions ou réactions de l’ENI, ces Missions peuvent se traduire par :                                                                                       FOD-PROD                                                                                                            \n\tFreinage sur une direction ;\n\tOccupation temporaire de points clés ;\n\tDéfense ferme pour barrer une direction.\nPrincipes :\n \n\tProgression au rythme de l’unité couverte ;\n\tRenseignement sur l’ENI et sur le TRN ;\n\tOpposition à partir d’une ligne ou zone ;\n\tDiscrétion est de règle.\n \n\n\n\nMISSIONS DE COMBAT OFFENSIF",
+    []),
+  card('ab27', "Q27 : RAID.",
+    "Incursion rapide et profonde à l’intérieur du dispositif désorganisé adverse pour se Saisir d’une zone clé \nou Détruire des objectifs de grand intérêt. Il est lié à l'exploitation ou contre un ENI en repli. ISD-AASBR                                                                                                      \nPrincipes :                                                                                                                      \n\tAcquisition et transmission des renseignements ;\n\tAmplitude large grâce à l'autonomie des matériels et à la richesse en moyens radio ;\n\tRecherche de la Surprise par la vitesse ;\n\tBrutalité dans l’action ;\n\tRaid peut être mené frontalement.",
+    []),
+  card('ab28', "Q28 : ATTAQUE.",
+    "Ouvrir une brèche dans le dispositif d’arrêt adverse. Elle implique l'effet de Surprise, d’où :                                                                            \n\tPréparation minutieuse ;                                                                           OS-PBCD-RSS-12SN\n\tBrutalité au débouché ;\n\tCoordination avec les autres Armes et l’Aviation ;\n\tDiscrétion à l’approche.\nPrincipes :\n\tRapport de forces doit être favorable ;\n\tSuppose un dispositif ENI déjà reconnu ;\n\tS’exécute dans la foulée ou après préparation.\n     Dans l'Attaque, il y a Combinaison feu-mouvement :\n-\t1°éch débouche en formation serrée ;\n-\t2°éch s'engage au moment opportun ;\n-\tSupériorité des feux est capitale ;\n-\tDe Nuit, l'action est décentralisée.",
+    []),
+  card('ab29', "Q29 : POURSUITE.",
+    "Exploitation beaucoup plus audacieuse qui consiste à poursuivre l'ennemi défait. Elle implique Puissance feu, Rapidité et Sûreté éloignée.                                                                                                                          Ex-PRS",
+    []),
+  card('ab30', "Q30 : EXPLOITATION.",
+    "- Coopération avec les autres Armes et Décentralisation poussée y sont recherchées.       CDoP-ARNAC\n- Déclenchement opportun, en fonction du degré de résistance de l’ENI.\n- Pénétration profonde à l’intérieur du dispositif adverse, après sa percée.         \nPrincipes :\n\tAboutissement normal de l’ATT, l’engagement se fait sans délai ;\n\tRapidité par actions décentralisées par fuseaux ;\n\tDe Nuit, le rythme est moins élevé ;\n\tAcquisition et transmission des Renseignements ;\n\tPréciser tjrs la CAT face aux éléments ENI rencontrés :\n-\tProgression rapide s'il s'agit de saisir des points vitaux ;\n-\tDestruction et désorganisation s'il s'agit de détruire les réserves et organes de Cdmt.\nMISSIONS DANS LE COMBAT DEFENSIF",
+    []),
+  card('ab31', "Q31 : DEFENSE FERME.",
+    "Rarement employée par l’AB, sauf en Situation de crise, elle consiste à Arrêter un ENI en avant de positions préparées et Détruire ses éléments infiltrés.                                                            RAD-V4C\n    Principes :\n\tVues et champs de tir dégagés ;\n\tChoix du TRN et des obstacles ;\n\tCamouflage et protection des unités ;\n\tCombinaison des feux ;\n\tCATT pour rétablir l'intégrité du dispositif.",
+    []),
+  card('ab32', "Q32 : FREINAGE.",
+    "Il s'agit de Ralentir l’ENI en lui infligeant le maximum de pertes.                                                  R-RCL-S\nPrincipes :\n\tNécessité d'avoir des Réserves mobiles ;\n\tCombinaison de défense statique et mobile ;\n\tPrincipalement une Lutte de chars contre chars ;\n\tS’effectue soit en : -Décentralisé de bout en bout à l’intérieur de fuseaux respectifs ;\n                                  -Centralisé avec deux éch : FRN Alterné au CARR, suivi d’esquive.",
+    []),
+  card('ab33', "Q33 : COUP D’ARRET.",
+    "Visant une économie dans le rapport de forces, le C.ARR consiste en une Action brève, brutale et par surprise, visant à Briser l’élan de l’ENI en lui infligeant le maximum de pertes.                              B-DOPP\nPrincipes :\n\tDispositif comprend un élément feu, un butoir, une couverture et un élément d’alerte ;\n\tOccupation rapide des positions de tir ;\n\tPréparation des positions à l’avance ;\n\tPrise à parti d’un ENI supérieur en nombre (densité de feux et surprise).",
+    []),
+  card('ab34', "Q34 : CONTRE-ATTAQUE.",
+    "C'est une Réaction Offensive Brutale combinant feu-mouvement et visant :                    RE-DMM-CSD\n\t Rétablissement de l’intégrité d’un dispositif ;\n\t Exploitation d’une erreur d’un ENI en action.\n\n    Principes :\n\tDétruire ou au moins arrêter l’ENI en ATT, en lui infligeant des pertes ;\n\tMenée en position défavorable, elle vise un revirement de situation ;\n\tMenée contre un ENI connu dans un TRN connu.\n    Facteurs de réussite :\n\tChoix de l’axe de progression ;\n\tSurprise ;\n\tDéclenchement opportun.",
+    []),
+  card('ab35', "Q35 : COMBAT SUR LES ARRIERES DE L’ENI.",
+    "Revêt différentes formes : CATT - ATT - CARR - Embuscades AC.\nAUTRES FORMES DE COMBAT",
+    []),
+  card('ab36', "Q36 : COMBAT EN ZONE URBAINE.",
+    "Contrairement aux zones Périphériques des agglomérations plutôt favorables à l'engagement    des blindés, la zone Urbaine en est défavorable.                                                             SLIM Dans l’Offensive : Faute de pouvoir éviter le combat en ZU, l’unité blindée :\n\tS’en empare par surprise au moyen de Raids ;\n\tLimite l’action à l’ouverture d’un ou deux axes pour traverser rapidement la localité.\n    Dans la Défensive :\n\tInterdire à l’ENI les couloirs de pénétration naturels et le forcer à s’engager au périmètre urbain pour le détruire ;\n\tManœuvre sera décentralisée, soutien de l’infanterie pour interdire ou contre-attaquer.",
+    []),
+  card('ab37', "Q37 : COMBAT DE NUIT.",
+    "Le combat de nuit Requiert :                                                                                                         DisCoTE\n\tDiscipline ferme ;\n\tConception tactique simple ;\n\tTerrain favorable aux chars et des repères ;\n\tEntraînement intensif.\n     Parmi les actions menées de nuit, figurent en particulier l'ATT et la Défense de nuit.\n\n\nIII-NOTIONS SUR LA BRB",
+    []),
+  card('ab38', "Q38 : Définition de la BRB.",
+    "Unité apte à mener un combat dynamique et rapide, combinant actions en force et en souplesse, contre un ennemi de même nature. GU de structure permanente à vocation opérationnelle, elle est constituée de GEBs destinés à réaliser      des missions tactiques définies.",
+    []),
+  card('ab39', "Q39 : Rôle de la BRB.",
+    "-Soit S'engager en force ou en souplesse en vue de conquérir un objectif terrain, ou détruire un dispositif ennemi ;\n-Soit Contrôler un espace géographique, en conservant une capacité permanente d'intervention.",
+    []),
+  card('ab40', "Q40 : Pourquoi la BRB est une structure de Niveau tactique.",
+    "-\tManœuvrière ;                                                                                                                                                  M-3C\n-\tCapable de mener des actions dans une certaine durée, avec une autonomie logistique restreinte pour permettre à l'échelon supérieur, de mener une action décisive ou de préparer une phase ultérieure ;\n-\tConstruite pour une mission précise et pour répondre aux modes opératoires de coercition de forces ou de maîtrise de la violence ;\n-\tCapable de s'engager en autonome, mais pour une action limitée dans le temps et dans l'espace, compte tenu de ses capacités initiales.\n           En opérations, la Brigade est chargée de conduire les actions de contact et de coordonner les effets des appuis   dans sa zone d'engagement.",
+    []),
+  card('ab41', "Q41 : Quel est le Cadre d’emploi de la BRB.",
+    "D'un volume de forces dépassant 2300 hommes, elle peut s'engager soit :                                                     ANE\n-\tEn Autonome en menant l’action de bout en bout par ses moyens propres ;\n-\tEn tant que Noyau dur d’une force opérationnelle terrestre pour remplir des missions de grande envergure. \n   Elle disposera de capacités d’appui et de soutien adaptés ;\n-\tSoit par Eléments dissociés pour mener des missions particulières.",
+    []),
+  card('ab42', "Q42 : Donner l’Organisation de la BRB.",
+    "-\t(01) GCAS ;\n-\t(03) Groupes d’Escadrons Blindés (GEB).",
+    []),
+  card('ab43', "Q43 : Quels sont les Moyens de la BRB.",
+    "\tCommandement : intégré au sein du GCAS, l’entité commandement de la BRB englobe :\n \n-\t(01) EM Brigade ;\n-\t(01) ECS ;\n-\t(01) Escadron Trans ;                                             CRCAS\n-\t(01) Centre de Simulation Intégré\n \n\tRenseignement surveillance : (01) Escadron Eclairage et Investigation.\n\tCombat : (03) GEB structurés chacun en :\n\t(01) ECS ;\n\t(03) escadrons de chars de combat articulés chacun en (03) pelotons de chars ;\n\t(01) escadron mécanisé ;\n\t(01) escadron missile anti-char.\n\tAppui :  -Permanent : ART et Génie.\n        -Possible : S/GAC\n\tSoutien : pour assurer son soutien logistique et sa protection A/A, la BRB dispose de :\n-\t(01) Escadron Réparation Matériel ;\n-\t(01) Escadron Transport, intégrant un peloton de camions porte chars ;\n-\t(01) Escadron AA ;\n-\t(01) Peloton Santé.",
+    []),
+  card('ab44', "Q44 : Quelles sont les Capacités de la BRB.",
+    "\tProtection : Grâce au blindage et à la mobilité ;                                                                         POMMM-DRAFT\n\tObservation : Grâce aux moyens de vision tout temps ;\n\tMobilité : Les unités de la BRB ne restent pas attachées aux axes ;\n\tManœuvrabilité : Les unités de la BRB combinent en permanence feu et      mouvement ;\n\tMaîtrise de l'usage de la force : Les équipages peuvent maîtriser le déclenchement de feux ;\n\tDestruction : Par la concentration brutale de leurs tirs ;\n\tRenseignement : Les différentes sources de renseignement sont accordées à la BRB ;\n\tAttitude : Les unités de la BRB ne restent pas liées à un dispositif figé ;\n\tFeux : Grace à l’armement, la conduite de tir et les équipements optroniques ;\n\tTransmissions : riche en moyens Trans.",
+    []),
+  card('ab45', "Q45 : Quelles sont les Aptitudes de la BRB.",
+    "-\tPuissance de feu maîtrisée et précise à courte et à longue distance, de jour comme de nuit ;                     PPAMI\n-\tProtection excellente des combattants ;\n-\tAdaptabilité de ses structures qui permet la constitution de Groupements équilibrés et puissants ;\n-\tMobilité tactique qui permet des bascules rapides de dispositif et favorise l’effet de surprise ;\n-\tImpact psychologique qui peut désorienter l’adversaire.",
+    []),
+  card('ab46', "Q46 : Comment la BRB est capable d’intervenir sur Tout le spectre des opérations.",
+    "Elle est en mesure de répondre aux doubles impératifs de :\n\tS’engager dans un conflit majeur interarmes ou interarmées et prendre la décision contre le gré de l’ENI ;\n\tContribuer au succès des ops de stabilisation par ses spécificités et son aptitude à la réversibilité.",
+    []),
+  card('ab47', "Q47 : Quels sont les Principes d’emploi de la BRB.",
+    "-\tDisposer d’un maximum de Renseignements sur l’ennemi et les amis ;                                        RRFFISSSAT\n-\tRythmer l’action en s’accommodant aux réactions adverses ;\n-\tPorter le Feu sur le point vulnérable de l’adversaire ;\n-\tRechercher les Failles du dispositif ennemi ;\n- Disposer d’une marge d’Initiative ;\n-\tProgresser en Sûreté et en deux échelons dans la marche à l’ennemi.\n-\tBénéficier de la Surprise et des appuis feux des amis ;\n-\tSoutien logistique de proximité ;\n-\tEviter l’Attaque frontale.",
+    []),
+  card('ab48', "Q48 : Pourquoi la BRB doit Privilégier la manœuvre.",
+    "\tImposer un Rythme élevé à la manœuvre ;                                                                            RIALiTE-4S\n\tPrendre et conserver l'Initiative ;      \n\tContraindre l'Adversaire à disperser ses efforts ;\n\tEviter un combat Linéaire ;\n\tUtiliser le Terrain ;\n\tUtiliser les Espaces non contrôlés ;\n\tParticiper à la Surveillance des vides de l'espace terrestre ;\n\tChercher en permanence à créer la Surprise ;\n\tEviter le combat Statique et la prise sous les feux adverses ;\n\tSe protéger.",
+    []),
+  card('ab49', "Q49 : Que vise la détermination des Normes d’engagement.",
+    "La détermination des normes d’engagement découle d’une étude globale des différents paramètres tels que les capacités et les aptitudes opérationnelles, l’autonomie logistique, le degré de préparation, le RETEX, et les facteurs liés au milieu, à l’ennemi, à la mission et aux forces morales, etc.\n\n\nIV- NOTIONS SUR LE RRC",
+    []),
+  card('ab50', "Q50 : Donner le Cadre d’emploi du RRC.",
+    "Agit en Totalité soit d’une manière Autonome, soit au Sein d’une GU, mais avec des appuis nécessaires, pour renverser localement et temporairement un rapport de force défavorable ou exploiter une situation particulièrement favorable. Au sein d’un dispositif interarmes, dont il renforce la puissance et accroît le rythme et la portée, le RRC peut agir, à titre exceptionnel et temporaire, en Sous Groupements pour mener des actions décentralisées.",
+    []),
+  card('ab51', "Q51 : Que vise l’engagement du RRC.",
+    "-Briser les actions offensives adverses par des C.ARR et des C.ATT ;                                                                  BPE\n-Prendre l'initiative par des actions de force pour percer le dispositif adverse ;\n-Exploiter les failles décelées dans son dispositif ou créées par une attaque, afin d'obtenir une désorganisation des forces adverses.",
+    []),
+  card('ab52', "Q52 : Les Moyens dont dispose le RRC.",
+    "Commandement\t•\t(01) PC ;                                                                                CCS-DPE\n•\t(01) Groupe Trans.\n              Combat\t•\t(04) Escadrons de chars ;\n•\t(01) Escadron missiles AC ;\n•\t(01) Escadron mécanisé.\n        Soutien logistique\t•\t(01) Peloton Ravitaillement Essence, Munitions et Eau (PREM) ;\n•\t(01) Groupe Santé.\nDéfense NRBC\t•\t(01) Groupe NRBC.\nProtection A/A\t•\t(01) Groupe Protection par Escadron de char.\n               Eclairage\t•\t (01) Peloton Eclairage :\n-\tEquipe Commandement ;\n-\tEquipe Mitrailleuse MP ;\n-\tEquipe LRAC.",
+    []),
+  card('ab53', "Q53 : Quelles sont les Missions du Peloton d’Eclairage.",
+    "\tAssurer la Viabilité des axes ;                                                                                                           VERR\n\tExtraire des moyens humains de renseignement ;\n\tRenseigner sur un Objectif TRN ou ENI.\n\tRenseigner sur le Contour d'une Unité ennemie ;",
+    []),
+  card('ab54', "Q54 : Citer les Caractéristiques du RRC.",
+    "-\tPuissance feu considérable ;                                                                                                         PMS\n-\tGrande Mobilité ;\n-\tSouplesse remarquable.",
+    []),
+  card('ab55', "Q55 : Quelles sont les Contraintes du RRC.",
+    "\tManque de moyens organiques de défense A/A ;                                                                            MAN\n\tAbsence d’armes à tir courbe ; \n\tNombre insuffisant de combattants à pied.",
+    []),
+  card('ab56', "Q56 : Quels sont les Principes d’emploi du RRC.",
+    "1-\tBut à atteindre : - Destruction des blindés adverses ;                                                                  DARAR\n2-\tDirection d’engagement :   \n-\tAttaque frontale à éviter ;\n-\tRecherche systématique du point faible de l'ENI.\n3-\tAudace, Surprise et Renseignement.\n4-\tRythme de l’action : Brutal et saccadé, alternance des postures offensives et défensives.",
+    []),
+  card('ab57', "Q57 : Quelles sont les Articulations possibles du RRC.",
+    "\tNiveau normal d'engagement est le Régiment Tous moyens réunis. Exceptionnellement et temporairement, la constitution d'un Sous-Groupement aux ordres du Cdt en Second :\n\tSur ordre de la GU.\n\tA l'initiative du Commandant le RRC.\n\tEscadron de chars indissociable, fréquemment renforcé d'un peloton mécanisé, parfois d'un peloton AC.\n\tEscadron mécanisé est employé :\n\tSoit tous les moyens réunis ;\n\tSoit fractionné lorsque les circonstances l'exigent.\n\tEscadron AC réparti entre Escadrons de chars ou déployé en unité constituée en 2°échelon.",
+    []),
+  card('ab58', "Q58 : Les Formations du RRC au combat.",
+    "\tAvant l'engagement : Progresse en Sûreté, généralement sur route et sur au moins sur 02 itinéraires, prêt à intervenir rapidement sur sa direction de progression ou sur une autre direction.\n\tAu moment de l'engagement : Le Régiment se déplace dans une formation adaptée à sa mission et au terrain :\n-\tDeux escadrons en tête, deux escadrons en soutien ;\n-\tTrois escadrons en tête, un escadron en soutien.\nL’Escadron mécanisé peut être réparti entre les Escadrons ou assurant, en unité constituée une mission de sûreté.\nL’Escadron missile peut être réparti entre Escadrons de chars ou déployé en unité constituée en 2° échelon.",
+    []),
+  card('ab59', "Q59 : L’Echelonnement des moyens logistiques du RRC.",
+    "Avant l'engagement : Les moyens logistiques du RRC sont :\n\tSoit regroupés, lors du stationnement, en zones de Desserrement, Déploiement initial, puis d'Attente ;\n\tSoit, répartis entre les rames pendant les déplacements sur route entre ces zones.\nEn cours d'engagement : Les moyens logistiques sont répartis dans la profondeur en 3 échelons :\n\tTC N°1 : rassemblent les moyens immédiatement indispensables au soutien de combat ;\n\tTC N°2 : (aux ordres Cdt ECS) regroupent les moyens de soutien et véhicules encombrants ;\n\tTR : (aux ordres Chef SA) regroupe, à la base de la GU, les services administratifs du RRC, les groupes administratifs des escadrons et des véhicules du PREM.",
+    []),
+  card('ab60', "Q60 : La Zone d’action du RRC.",
+    "Elle varie en fonction de la situation de la GU et de la mission impartie au RRC.\n\tLargeur : entre 3 et 12 Km.\n\tProfondeur : entre 5 et 30 Km.",
+    []),
+  card('ab61', "Q61 : Quelles sont les principales menaces auxquelles fait face le RRC ?",
+    "→ Elles s’articulent autour du triptyque blindés – avion – hélicoptère, éventuellement appuyé par des moyens chimiques. Elles comprennent les menaces terrestres et aériennes, la guerre électronique et la menace chimique.",
+    []),
+  card('ab62', "Q62 : Quel est l’ennemi préférentiel de l’Escadron de chars et quelle menace terrestre peut-il rencontrer ?",
+    "→ Son ennemi préférentiel est constitué des blindés adverses, notamment les chars et les véhicules antichars. Il peut rencontrer un ennemi blindé et mécanisé puissant, renforcé d’artillerie, déployé en exploitation ou en colonne sur les axes.",
+    []),
+  card('ab63', "Q63 : En quoi consistent les menaces de guerre électronique et chimique et quelles mesures prendre ?",
+    "→ La guerre électronique peut être passive (écoute) ou active (brouillage) : il faut respecter strictement les procédures, limiter les émissions et prévoir les mesures en cas de brouillage. La menace chimique correspond à un emploi massif et inopiné des gaz de combat, auquel l’escadron doit répondre par les mesures appropriées.",
+    [])
+];
+
+async function main() {
+  console.log('🚀 Démarrage de la synchronisation Arme Blindée -> Supabase\n');
+
+  // 1. Upsert du deck
+  console.log('📁 Upsert du deck...');
+  const { error: deckError } = await supabase
+    .from('decks')
+    .upsert(DECK, { onConflict: 'id' });
+
+  if (deckError) {
+    console.error('❌ Erreur deck:', deckError.message);
+  } else {
+    console.log(`✅ Deck "${DECK.title}" upserted avec succès.`);
+  }
+
+  // 2. Upsert des cartes par batch
+  console.log(`\n🃏 Upsert de ${CARDS.length} cartes...`);
+  const BATCH = 20;
+  let successCount = 0;
+
+  for (let i = 0; i < CARDS.length; i += BATCH) {
+    const batch = CARDS.slice(i, i + BATCH);
+    const { error } = await supabase
+      .from('cards')
+      .upsert(batch, { onConflict: 'id' });
+
+    if (error) {
+      console.error(`❌ Erreur batch ${i / BATCH + 1}:`, error.message);
+    } else {
+      successCount += batch.length;
+      console.log(`  ✅ Batch ${i / BATCH + 1}: ${batch.length} cartes (${successCount}/${CARDS.length})`);
+    }
+  }
+
+  console.log(`\n✅ Synchronisation terminée : ${successCount}/${CARDS.length} cartes poussées.`);
+
+  // 3. Vérification
+  const { data, error: fetchError } = await supabase
+    .from('cards')
+    .select('id', { count: 'exact' })
+    .eq('deck_id', DECK_ID);
+
+  if (!fetchError) {
+    console.log(`\n📊 Vérification : ${data.length} cartes trouvées dans Supabase pour le deck Arme Blindée.`);
+  }
+}
+
+main().catch(console.error);

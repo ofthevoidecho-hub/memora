@@ -43,28 +43,7 @@ export default function App() {
     resetReviewStats,
   } = useMemoraState();
 
-  useEffect(() => {
-    // Temporary script to restore missing cards from demo data for the requested deck
-    try {
-      const storedCardsRaw = localStorage.getItem('memora_cards');
-      if (storedCardsRaw) {
-        let currentCards: Card[] = JSON.parse(storedCardsRaw);
-        const demoCards = INITIAL_CARDS.filter(c => c.deckId === 'deck-armes-infanterie');
-        
-        // Find cards that are in demoData but not in localStorage
-        const missingCards = demoCards.filter(dc => !currentCards.some(cc => cc.id === dc.id));
-        
-        if (missingCards.length > 0) {
-          console.log("Restoring missing cards:", missingCards);
-          currentCards = [...missingCards, ...currentCards];
-          localStorage.setItem('memora_cards', JSON.stringify(currentCards));
-          window.location.reload(); // Reload to pick up changes
-        }
-      }
-    } catch (e) {
-      console.error(e);
-    }
-  }, []);
+
 
   const getInitialTab = (): ActiveTab => {
     if (typeof window === 'undefined') return 'dashboard';

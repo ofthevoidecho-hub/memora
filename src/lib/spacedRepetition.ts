@@ -117,6 +117,13 @@ export function isCardDue(card: Card, nowISO: string = new Date().toISOString())
 }
 
 /**
+ * Helper to check if a card is considered difficult (rated "Difficile" or "À revoir")
+ */
+export function isCardDifficult(card: Card): boolean {
+  return card.difficulty > 5 || card.lapses > 0;
+}
+
+/**
  * Helper to get deck statistics
  */
 export function getDeckStats(deckId: string, cards: Card[]) {
@@ -126,6 +133,7 @@ export function getDeckStats(deckId: string, cards: Card[]) {
   const newCount = deckCards.filter((c) => c.state === 'new').length;
   const learning = deckCards.filter((c) => c.state === 'learning' || c.state === 'relearning').length;
   const mastered = deckCards.filter((c) => c.state === 'review' && c.interval >= 21).length;
+  const difficultCount = deckCards.filter(isCardDifficult).length;
   const retentionRate = total > 0 ? Math.round(((total - deckCards.filter((c) => c.lapses > 2).length) / total) * 100) : 100;
 
   return {
@@ -134,6 +142,7 @@ export function getDeckStats(deckId: string, cards: Card[]) {
     newCount,
     learning,
     mastered,
+    difficultCount,
     retentionRate,
   };
 }

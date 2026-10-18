@@ -13,7 +13,7 @@ import {
   Award,
 } from 'lucide-react';
 import { ActiveTab, Card, Deck, UserSettings, UserStats } from '../../types';
-import { getDeckStats } from '../../lib/spacedRepetition';
+import { getDeckStats, isCardDifficult } from '../../lib/spacedRepetition';
 import { Heatmap } from '../ui/Heatmap';
 
 interface DashboardViewProps {
@@ -46,7 +46,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
   const totalCardsCount = cards.length;
   const masteredCardsCount = cards.filter((c) => c.state === 'review' && c.interval >= 14).length;
-  const difficultCardsCount = cards.filter((c) => c.lapses > 1 || c.difficulty >= 7).length;
+  const difficultCardsCount = cards.filter(isCardDifficult).length;
 
   return (
     <div className="space-y-8 pb-12 max-w-6xl mx-auto animate-in fade-in duration-200">
@@ -259,7 +259,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {decks.map((deck) => {
             const dStats = getDeckStats(deck.id, cards);
-            const progressPercent = dStats.total > 0 ? Math.round(((dStats.total - dStats.due) / dStats.total) * 100) : 100;
+            const progressPercent = dStats.total > 0 ? Math.round(((dStats.total - dStats.newCount) / dStats.total) * 100) : 100;
 
             return (
               <div

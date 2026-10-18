@@ -186,29 +186,30 @@ export async function checkAndFireOnAppLoad(
         }
       }
 
-      // Send deck-specific notifications
+      // Send difficult questions across all decks, grouped by deck/arme
       if (cards && decks) {
-        for (const deck of decks) {
-          if (deck.telegramReminderEnabled) {
-            const deckCards = cards.filter(c => c.deckId === deck.id);
-            const difficultCards = deckCards.filter(c => c.difficulty >= 7 || c.flagged || c.lapses > 1);
+        const difficultCards = cards.filter(c => c.difficulty > 5 || c.lapses > 0);
+        if (difficultCards.length > 0) {
+          let text = `🔥 <b>Memora — Rappel Questions Difficiles (${difficultCards.length})</b>\n\n`;
 
-            if (difficultCards.length > 0) {
-              let text = `📚 <b>Rappel — Deck : ${deck.title}</b>\n`;
-              text += `Voici les questions que vous avez déclarées difficiles à restituer :\n\n`;
-              
-              difficultCards.forEach((c, idx) => {
-                text += `<b>${idx + 1}. Q:</b> ${c.question}\n`;
-                text += `<b>R:</b> <tg-spoiler>${c.answer}</tg-spoiler>\n\n`;
+          for (const deck of decks) {
+            const deckDiff = difficultCards.filter(c => c.deckId === deck.id);
+            if (deckDiff.length > 0) {
+              const icon = deck.title.toLowerCase().includes('blindée') ? '🛡️'
+                : deck.title.toLowerCase().includes('air') ? '✈️'
+                : deck.title.toLowerCase().includes('gendarmerie') ? '👮'
+                : '⚔️';
+              text += `${icon} <b>${deck.title}</b> (${deckDiff.length}) :\n`;
+              deckDiff.forEach((c, idx) => {
+                text += `<b>${idx + 1}.</b> ${c.question}\n\n`;
               });
-              
-              text += `Prêt à les restituer ? 🔥`;
-
-              const success = await sendTelegramNotification(telegramOptions.token, telegramOptions.chatId, text);
-              if (success) {
-                sentSomething = true;
-              }
             }
+          }
+
+          text += `Prêt à réviser ? 🔥\n<a href="${window.location.origin}">📖 Ouvrir Memora</a>`;
+          const success = await sendTelegramNotification(telegramOptions.token, telegramOptions.chatId, text);
+          if (success) {
+            sentSomething = true;
           }
         }
       }

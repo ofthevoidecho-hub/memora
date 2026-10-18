@@ -17,7 +17,7 @@ import {
   Shuffle,
 } from 'lucide-react';
 import { ActiveTab, Card, CardRating, Deck, UserSettings } from '../../types';
-import { getFormattedNextInterval, isCardDue } from '../../lib/spacedRepetition';
+import { getFormattedNextInterval, isCardDue, isCardDifficult } from '../../lib/spacedRepetition';
 
 interface ReviewSessionViewProps {
   cards: Card[];
@@ -55,7 +55,17 @@ export const ReviewSessionView: React.FC<ReviewSessionViewProps> = ({
 
   const cardStartTimeRef = useRef<number>(Date.now());
 
-  const selectedDeck = targetDeckId ? decks.find((d) => d.id === targetDeckId) : null;
+  const isDifficultSession = targetDeckId === 'difficult' || targetDeckId?.startsWith('difficult:');
+  const actualDeckId = targetDeckId?.startsWith('difficult:') ? targetDeckId.replace('difficult:', '') : targetDeckId;
+  const selectedDeck = actualDeckId && actualDeckId !== 'difficult' ? decks.find((d) => d.id === actualDeckId) : null;
+
+  const sessionBadgeTitle = targetDeckId === 'difficult'
+    ? '🔥 Toutes les Questions Difficiles'
+    : isDifficultSession && selectedDeck
+    ? `🔥 ${selectedDeck.title} — Difficiles`
+    : selectedDeck
+    ? selectedDeck.title
+    : 'Toutes les révisions';
 
   // Extract the numeric part from a card ID for natural ordering (e.g. "inf65" -> 65)
   const getCardSortKey = (card: Card): number => {
@@ -71,7 +81,11 @@ export const ReviewSessionView: React.FC<ReviewSessionViewProps> = ({
     let queue: Card[] = [];
     
     if (targetDeckId === 'difficult') {
-      pool = cards.filter((c) => c.lapses > 1 || c.difficulty >= 7);
+      pool = cards.filter(isCardDifficult);
+      queue = pool.slice(0, settings.maxReviewsPerDay || 100);
+    } else if (targetDeckId?.startsWith('difficult:')) {
+      const deckIdToFilter = targetDeckId.replace('difficult:', '');
+      pool = cards.filter((c) => c.deckId === deckIdToFilter && isCardDifficult(c));
       queue = pool.slice(0, settings.maxReviewsPerDay || 100);
     } else {
       if (targetDeckId) {
@@ -278,7 +292,7 @@ export const ReviewSessionView: React.FC<ReviewSessionViewProps> = ({
 
           <div className="space-y-2">
             <span className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300">
-              {selectedDeck ? selectedDeck.title : 'Toutes les révisions'}
+              {sessionBadgeTitle}
             </span>
             <h2 className="text-2xl font-extrabold text-neutral-900 dark:text-white tracking-tight">
               Session de révision

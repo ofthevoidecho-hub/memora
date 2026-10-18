@@ -18,9 +18,13 @@ import {
   syncStatsToSupabase,
   fetchFromSupabase,
   fetchStatsFromSupabase,
+  updateCardInSupabase,
+  resetDeckInSupabase,
+  deleteCardInSupabase,
+  deleteDeckInSupabase,
 } from '../lib/storage';
 import { supabase } from '../lib/supabase';
-import { calculateNextReview, isCardDue } from '../lib/spacedRepetition';
+import { calculateNextReview, isCardDue, isCardDifficult } from '../lib/spacedRepetition';
 import { registerServiceWorker, scheduleNotification, cancelNotification, checkAndFireOnAppLoad } from '../lib/notifications';
 
 export function useMemoraState() {
@@ -36,13 +40,20 @@ export function useMemoraState() {
   // Ref to track if realtime channel is already subscribed
   const realtimeChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
-  // Initial Fetch from Supabase (cards, decks, and stats)
+  // Initial Fetch from Supabase (cards, decks, and stats) - Database is Source of Truth
   useEffect(() => {
     if (user) {
       Promise.all([
         fetchFromSupabase(user.id),
         fetchStatsFromSupabase(user.id),
-      ]).then(() => {
+      ]).then(([remoteData, remoteStats]) => {
+        if (remoteData) {
+          if (remoteData.decks.length > 0) setDecks(remoteData.decks);
+          if (remoteData.cards.length > 0) setCards(remoteData.cards);
+        }
+        if (remoteStats) {
+          setStats(remoteStats);
+        }
         setIsDataLoaded(true);
       });
     } else {
@@ -50,7 +61,7 @@ export function useMemoraState() {
     }
   }, [user]);
 
-  // Supabase Sync — cards & decks after every change
+  // Supabase Sync — cards & decks backup sync after data is loaded
   useEffect(() => {
     if (user && isDataLoaded) {
       syncToSupabase(user.id, cards, decks);
@@ -84,10 +95,14 @@ export function useMemoraState() {
           table: 'cards',
           filter: `user_id=eq.${user.id}`,
         },
-        (payload) => {
-          // Another device updated a card — re-fetch all cards from Supabase
+        async (payload) => {
+          // Another device updated a card — re-fetch all cards from Supabase and update state
           console.log('[Realtime] Card change detected from another device:', payload.eventType);
-          fetchFromSupabase(user.id);
+          const remote = await fetchFromSupabase(user.id);
+          if (remote && remote.cards.length > 0) {
+            setCards(remote.cards);
+            setDecks(remote.decks);
+          }
         }
       )
       .on(
@@ -98,9 +113,10 @@ export function useMemoraState() {
           table: 'user_stats',
           filter: `user_id=eq.${user.id}`,
         },
-        (payload) => {
+        async (payload) => {
           console.log('[Realtime] Stats change detected from another device:', payload.eventType);
-          fetchStatsFromSupabase(user.id);
+          const remoteStats = await fetchStatsFromSupabase(user.id);
+          if (remoteStats) setStats(remoteStats);
         }
       )
       .subscribe();
@@ -115,7 +131,7 @@ export function useMemoraState() {
 
   // Computed helper counters
   const dueCards = cards.filter((c) => isCardDue(c));
-  const difficultCards = cards.filter((c) => c.lapses > 1 || c.difficulty >= 7);
+  const difficultCards = cards.filter(isCardDifficult);
   const favoriteCards = cards.filter((c) => c.favorite);
   const learnedCards = cards.filter((c) => c.state === 'review' && c.interval >= 7);
 
@@ -236,6 +252,10 @@ export function useMemoraState() {
     (id: string, updates: Partial<Card>) => {
       const updated = cards.map((c) => (c.id === id ? { ...c, ...updates, updatedAt: new Date().toISOString() } : c));
       saveCards(updated);
+      const target = updated.find((c) => c.id === id);
+      if (target) {
+        updateCardInSupabase(target);
+      }
     },
     [cards]
   );
@@ -244,6 +264,7 @@ export function useMemoraState() {
     (id: string) => {
       const updated = cards.filter((c) => c.id !== id);
       saveCards(updated);
+      deleteCardInSupabase(id);
     },
     [cards]
   );
@@ -252,7 +273,9 @@ export function useMemoraState() {
     (id: string) => {
       const card = cards.find((c) => c.id === id);
       if (card) {
+        const updated = { ...card, favorite: !card.favorite, updatedAt: new Date().toISOString() };
         updateCard(id, { favorite: !card.favorite });
+        updateCardInSupabase(updated);
       }
     },
     [cards, updateCard]
@@ -262,7 +285,9 @@ export function useMemoraState() {
     (id: string) => {
       const card = cards.find((c) => c.id === id);
       if (card) {
+        const updated = { ...card, flagged: !card.flagged, updatedAt: new Date().toISOString() };
         updateCard(id, { flagged: !card.flagged });
+        updateCardInSupabase(updated);
       }
     },
     [cards, updateCard]
@@ -298,6 +323,7 @@ export function useMemoraState() {
     (id: string) => {
       saveDecks(decks.filter((d) => d.id !== id));
       saveCards(cards.filter((c) => c.deckId !== id));
+      deleteDeckInSupabase(id);
     },
     [decks, cards]
   );
@@ -319,11 +345,14 @@ export function useMemoraState() {
       });
       saveCards(updatedCards);
       localStorage.removeItem(`memora_saved_index_${deckId}`);
+      if (user) {
+        resetDeckInSupabase(deckId, user.id);
+      }
     },
-    [cards]
+    [cards, user]
   );
 
-  // Process Card Review Rating
+  // Process Card Review Rating — Direct Supabase update
   const submitCardReview = useCallback(
     (cardId: string, rating: CardRating, timeSpentSeconds: number = 5) => {
       const card = cards.find((c) => c.id === cardId);
@@ -332,11 +361,10 @@ export function useMemoraState() {
       const nowISO = new Date().toISOString();
       const updatedCard = calculateNextReview(card, rating, nowISO);
 
-      // Save updated card
+      // Save updated card locally and immediately in database
       const newCards = cards.map((c) => (c.id === cardId ? updatedCard : c));
       saveCards(newCards);
-
-
+      updateCardInSupabase(updatedCard);
 
       // Save Review Log
       const log: ReviewLog = {
@@ -379,10 +407,13 @@ export function useMemoraState() {
         historyLog: updatedHistory,
       };
       saveStats(newStats);
+      if (user) {
+        syncStatsToSupabase(user.id, newStats);
+      }
 
       return updatedCard;
     },
-    [cards, reviewLogs, stats]
+    [cards, reviewLogs, stats, user]
   );
 
   // Bulk Import

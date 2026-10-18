@@ -381,7 +381,7 @@ export async function fetchStatsFromSupabase(userId: string): Promise<UserStats 
   }
 }
 
-export async function fetchFromSupabase(userId: string) {
+export async function fetchFromSupabase(userId: string): Promise<{ decks: Deck[]; cards: Card[] } | null> {
   try {
     // Fetch Decks
     const { data: dbDecks, error: decksError } = await supabase
@@ -389,10 +389,11 @@ export async function fetchFromSupabase(userId: string) {
       .select('*')
       .eq('user_id', userId);
 
+    let parsedDecks: Deck[] = [];
     if (decksError) {
       console.error('[Supabase Fetch] Decks error:', decksError);
     } else if (dbDecks && dbDecks.length > 0) {
-      const parsedDecks: Deck[] = dbDecks.map(d => ({
+      parsedDecks = dbDecks.map(d => ({
         id: d.id,
         title: d.title,
         description: d.description || '',
@@ -411,10 +412,11 @@ export async function fetchFromSupabase(userId: string) {
       .select('*')
       .eq('user_id', userId);
 
+    let parsedCards: Card[] = [];
     if (cardsError) {
       console.error('[Supabase Fetch] Cards error:', cardsError);
     } else if (dbCards && dbCards.length > 0) {
-      const parsedCards: Card[] = dbCards.map(c => ({
+      parsedCards = dbCards.map(c => ({
         id: c.id,
         deckId: c.deck_id,
         question: c.question,
@@ -436,8 +438,82 @@ export async function fetchFromSupabase(userId: string) {
       }));
       saveCards(parsedCards);
     }
+
+    return { decks: parsedDecks, cards: parsedCards };
   } catch (err) {
     console.error('[Supabase Fetch] Exception:', err);
+    return null;
   }
 }
+
+/**
+ * Direct database write for single card updates (instant multi-device sync)
+ */
+export async function updateCardInSupabase(card: Card) {
+  try {
+    const { error } = await supabase.from('cards').update({
+      difficulty: card.difficulty,
+      ease: card.ease,
+      interval: card.interval,
+      repetitions: card.repetitions,
+      lapses: card.lapses,
+      stability: card.stability,
+      state: card.state,
+      favorite: !!card.favorite,
+      flagged: !!card.flagged,
+      due_date: card.dueDate,
+      updated_at: card.updatedAt || new Date().toISOString(),
+    }).eq('id', card.id);
+
+    if (error) console.error('[Supabase Card Update] Error:', error);
+  } catch (err) {
+    console.error('[Supabase Card Update] Exception:', err);
+  }
+}
+
+/**
+ * Direct database reset for a deck
+ */
+export async function resetDeckInSupabase(deckId: string, userId: string) {
+  try {
+    const now = new Date().toISOString();
+    const { error } = await supabase.from('cards').update({
+      state: 'new',
+      interval: 0,
+      repetitions: 0,
+      lapses: 0,
+      due_date: now,
+      updated_at: now,
+    }).eq('deck_id', deckId).eq('user_id', userId);
+
+    if (error) console.error('[Supabase Deck Reset] Error:', error);
+  } catch (err) {
+    console.error('[Supabase Deck Reset] Exception:', err);
+  }
+}
+
+/**
+ * Direct database delete for a card
+ */
+export async function deleteCardInSupabase(cardId: string) {
+  try {
+    const { error } = await supabase.from('cards').delete().eq('id', cardId);
+    if (error) console.error('[Supabase Card Delete] Error:', error);
+  } catch (err) {
+    console.error('[Supabase Card Delete] Exception:', err);
+  }
+}
+
+/**
+ * Direct database delete for a deck and all its cards
+ */
+export async function deleteDeckInSupabase(deckId: string) {
+  try {
+    await supabase.from('cards').delete().eq('deck_id', deckId);
+    await supabase.from('decks').delete().eq('id', deckId);
+  } catch (err) {
+    console.error('[Supabase Deck Delete] Exception:', err);
+  }
+}
+
 

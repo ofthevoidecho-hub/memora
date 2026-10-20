@@ -16,12 +16,15 @@ import {
   storageEventBus,
   syncToSupabase,
   syncStatsToSupabase,
+  syncCardsBatchToSupabase,
   fetchFromSupabase,
   fetchStatsFromSupabase,
   updateCardInSupabase,
   resetDeckInSupabase,
   deleteCardInSupabase,
   deleteDeckInSupabase,
+  isSelfDbWriteRecent,
+  syncToIndexedDB,
 } from '../lib/storage';
 import { supabase } from '../lib/supabase';
 import { calculateNextReview, isCardDue, isCardDifficult } from '../lib/spacedRepetition';
@@ -35,50 +38,49 @@ export function useMemoraState() {
   const [stats, setStats] = useState<UserStats>(loadStats);
 
   const { user } = useUser();
+  const userId = user?.id;
   const [isDataLoaded, setIsDataLoaded] = useState(false);
 
-  // Ref to track if realtime channel is already subscribed
+  // Ref to track if realtime channel is already subscribed and debouncing
   const realtimeChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  const realtimeDebounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Pending review buffer: holds cards and stats updated during review session
+  const pendingReviewCardsRef = useRef<Map<string, Card>>(new Map());
+  const pendingStatsRef = useRef<UserStats | null>(null);
+  const isFlushingRef = useRef<boolean>(false);
+  const isInitialFetchDoneRef = useRef<boolean>(false);
 
   // Initial Fetch from Supabase (cards, decks, and stats) - Database is Source of Truth
   useEffect(() => {
-    if (user) {
+    if (userId && !isInitialFetchDoneRef.current) {
+      isInitialFetchDoneRef.current = true;
       Promise.all([
-        fetchFromSupabase(user.id),
-        fetchStatsFromSupabase(user.id),
-      ]).then(([remoteData, remoteStats]) => {
-        if (remoteData) {
-          if (remoteData.decks.length > 0) setDecks(remoteData.decks);
-          if (remoteData.cards.length > 0) setCards(remoteData.cards);
-        }
-        if (remoteStats) {
-          setStats(remoteStats);
-        }
-        setIsDataLoaded(true);
-      });
-    } else {
+        fetchFromSupabase(userId),
+        fetchStatsFromSupabase(userId),
+      ])
+        .then(([remoteData, remoteStats]) => {
+          if (remoteData) {
+            if (remoteData.decks.length > 0) setDecks(remoteData.decks);
+            if (remoteData.cards.length > 0) setCards(remoteData.cards);
+          }
+          if (remoteStats) {
+            setStats(remoteStats);
+          }
+          setIsDataLoaded(true);
+        })
+        .catch((err) => {
+          console.warn('[Memora] Initial fetch fallback to local storage:', err);
+          setIsDataLoaded(true);
+        });
+    } else if (!userId) {
       setIsDataLoaded(true);
     }
-  }, [user]);
+  }, [userId]);
 
-  // Supabase Sync — cards & decks backup sync after data is loaded
+  // Supabase Realtime — listen for card updates from other devices (debounced, avoids echoing self writes)
   useEffect(() => {
-    if (user && isDataLoaded) {
-      syncToSupabase(user.id, cards, decks);
-    }
-  }, [user, cards, decks, isDataLoaded]);
-
-  // Supabase Sync — stats after every change
-  useEffect(() => {
-    if (user && isDataLoaded) {
-      syncStatsToSupabase(user.id, stats);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, isDataLoaded, stats.totalReviewsCount, stats.streak, stats.lastActiveDate]);
-
-  // Supabase Realtime — listen for card updates from other devices
-  useEffect(() => {
-    if (!user) return;
+    if (!userId) return;
 
     // Avoid duplicate subscriptions
     if (realtimeChannelRef.current) {
@@ -86,23 +88,29 @@ export function useMemoraState() {
     }
 
     const channel = supabase
-      .channel(`cards-sync-${user.id}`)
+      .channel(`cards-sync-${userId}`)
       .on(
         'postgres_changes',
         {
           event: '*',
           schema: 'public',
           table: 'cards',
-          filter: `user_id=eq.${user.id}`,
+          filter: `user_id=eq.${userId}`,
         },
-        async (payload) => {
-          // Another device updated a card — re-fetch all cards from Supabase and update state
-          console.log('[Realtime] Card change detected from another device:', payload.eventType);
-          const remote = await fetchFromSupabase(user.id);
-          if (remote && remote.cards.length > 0) {
-            setCards(remote.cards);
-            setDecks(remote.decks);
+        () => {
+          if (isSelfDbWriteRecent()) return;
+          if (realtimeDebounceTimerRef.current) {
+            clearTimeout(realtimeDebounceTimerRef.current);
           }
+          realtimeDebounceTimerRef.current = setTimeout(async () => {
+            if (isSelfDbWriteRecent()) return;
+            console.log('[Realtime] Syncing cards updated from another device...');
+            const remote = await fetchFromSupabase(userId);
+            if (remote && remote.cards.length > 0) {
+              setCards(remote.cards);
+              setDecks(remote.decks);
+            }
+          }, 2500);
         }
       )
       .on(
@@ -111,12 +119,19 @@ export function useMemoraState() {
           event: '*',
           schema: 'public',
           table: 'user_stats',
-          filter: `user_id=eq.${user.id}`,
+          filter: `user_id=eq.${userId}`,
         },
-        async (payload) => {
-          console.log('[Realtime] Stats change detected from another device:', payload.eventType);
-          const remoteStats = await fetchStatsFromSupabase(user.id);
-          if (remoteStats) setStats(remoteStats);
+        () => {
+          if (isSelfDbWriteRecent()) return;
+          if (realtimeDebounceTimerRef.current) {
+            clearTimeout(realtimeDebounceTimerRef.current);
+          }
+          realtimeDebounceTimerRef.current = setTimeout(async () => {
+            if (isSelfDbWriteRecent()) return;
+            console.log('[Realtime] Syncing stats updated from another device...');
+            const remoteStats = await fetchStatsFromSupabase(userId);
+            if (remoteStats) setStats(remoteStats);
+          }, 2500);
         }
       )
       .subscribe();
@@ -124,10 +139,13 @@ export function useMemoraState() {
     realtimeChannelRef.current = channel;
 
     return () => {
+      if (realtimeDebounceTimerRef.current) {
+        clearTimeout(realtimeDebounceTimerRef.current);
+      }
       supabase.removeChannel(channel);
       realtimeChannelRef.current = null;
     };
-  }, [user]);
+  }, [userId]);
 
   // Computed helper counters
   const dueCards = cards.filter((c) => isCardDue(c));
@@ -242,15 +260,20 @@ export function useMemoraState() {
         flagged: false,
       };
       const updated = [newCard, ...cards];
+      setCards(updated);
       saveCards(updated);
+      if (user) {
+        updateCardInSupabase(newCard);
+      }
       return newCard;
     },
-    [cards]
+    [cards, user]
   );
 
   const updateCard = useCallback(
     (id: string, updates: Partial<Card>) => {
       const updated = cards.map((c) => (c.id === id ? { ...c, ...updates, updatedAt: new Date().toISOString() } : c));
+      setCards(updated);
       saveCards(updated);
       const target = updated.find((c) => c.id === id);
       if (target) {
@@ -263,6 +286,7 @@ export function useMemoraState() {
   const deleteCard = useCallback(
     (id: string) => {
       const updated = cards.filter((c) => c.id !== id);
+      setCards(updated);
       saveCards(updated);
       deleteCardInSupabase(id);
     },
@@ -352,7 +376,101 @@ export function useMemoraState() {
     [cards, user]
   );
 
-  // Process Card Review Rating — Direct Supabase update
+  // Flush Review Session to Supabase: saves all accumulated reviewed cards and stats in one single batch
+  const flushReviewSession = useCallback(
+    async (options?: { keepAlive?: boolean }) => {
+      if (!user) return;
+      if (isFlushingRef.current && !options?.keepAlive) return;
+
+      let pendingCards: Card[] = Array.from(pendingReviewCardsRef.current.values());
+      let pendingStats: UserStats | null = pendingStatsRef.current;
+
+      // Also inspect localStorage for any pending sync that might have been saved
+      if (pendingCards.length === 0 && !pendingStats) {
+        try {
+          const raw = localStorage.getItem('memora_pending_review_sync');
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            if (Array.isArray(parsed?.cards) && parsed.cards.length > 0) {
+              pendingCards = parsed.cards as Card[];
+            }
+            if (parsed?.stats) {
+              pendingStats = parsed.stats as UserStats;
+            }
+          }
+        } catch {
+          // ignore parsing error
+        }
+      }
+
+      if (pendingCards.length === 0 && !pendingStats) {
+        return; // Nothing to sync
+      }
+
+      isFlushingRef.current = true;
+      pendingReviewCardsRef.current.clear();
+      pendingStatsRef.current = null;
+      try {
+        localStorage.removeItem('memora_pending_review_sync');
+      } catch {
+        // ignore
+      }
+
+      try {
+        const promises: Promise<any>[] = [];
+        if (pendingCards.length > 0) {
+          promises.push(syncCardsBatchToSupabase(user.id, pendingCards, options?.keepAlive));
+        }
+        if (pendingStats) {
+          promises.push(syncStatsToSupabase(user.id, pendingStats, options?.keepAlive));
+        }
+
+        if (!options?.keepAlive) {
+          // Sync to IndexedDB once at the end of the review session
+          promises.push(syncToIndexedDB(loadCards(), undefined, loadDecks()));
+          await Promise.all(promises);
+          console.log(`[Memora Review] Synced ${pendingCards.length} reviewed cards and stats to Supabase.`);
+        }
+      } catch (err) {
+        console.error('[Memora Review] Error flushing review session:', err);
+      } finally {
+        isFlushingRef.current = false;
+      }
+    },
+    [user]
+  );
+
+  // Sync to database when the browser/tab closes or is backgrounded
+  useEffect(() => {
+    const handleUnload = () => {
+      flushReviewSession({ keepAlive: true });
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        flushReviewSession({ keepAlive: true });
+      }
+    };
+
+    window.addEventListener('beforeunload', handleUnload);
+    window.addEventListener('pagehide', handleUnload);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleUnload);
+      window.removeEventListener('pagehide', handleUnload);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [flushReviewSession]);
+
+  // Check and flush any pending review sync from a previous session on startup
+  useEffect(() => {
+    if (user && isDataLoaded) {
+      flushReviewSession();
+    }
+  }, [user, isDataLoaded, flushReviewSession]);
+
+  // Process Card Review Rating — Buffered in memory/localStorage during review, synced on session exit or browser close
   const submitCardReview = useCallback(
     (cardId: string, rating: CardRating, timeSpentSeconds: number = 5) => {
       const card = cards.find((c) => c.id === cardId);
@@ -361,12 +479,15 @@ export function useMemoraState() {
       const nowISO = new Date().toISOString();
       const updatedCard = calculateNextReview(card, rating, nowISO);
 
-      // Save updated card locally and immediately in database
+      // Save updated card locally in state and localStorage immediately (without heavy IDB sync & without event spam)
       const newCards = cards.map((c) => (c.id === cardId ? updatedCard : c));
-      saveCards(newCards);
-      updateCardInSupabase(updatedCard);
+      setCards(newCards);
+      saveCards(newCards, true, true);
 
-      // Save Review Log
+      // Buffer updated card for bulk database sync when leaving review
+      pendingReviewCardsRef.current.set(cardId, updatedCard);
+
+      // Save Review Log locally
       const log: ReviewLog = {
         id: 'log_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
         cardId,
@@ -378,13 +499,13 @@ export function useMemoraState() {
         timeSpentSeconds,
       };
       const newLogs = [log, ...reviewLogs];
+      setReviewLogs(newLogs);
       saveReviewLogs(newLogs);
 
-      // Update User Stats & Streak
+      // Update User Stats & Streak locally
       const todayStr = nowISO.split('T')[0];
       const updatedHistory = { ...stats.historyLog, [todayStr]: (stats.historyLog[todayStr] || 0) + 1 };
 
-      // Calculate streak
       let newStreak = stats.streak;
       if (stats.lastActiveDate !== todayStr) {
         const yesterday = new Date();
@@ -394,7 +515,7 @@ export function useMemoraState() {
         if (stats.lastActiveDate === yesterdayStr) {
           newStreak += 1;
         } else if (stats.lastActiveDate !== todayStr) {
-          newStreak = 1; // streak reset or fresh start
+          newStreak = 1;
         }
       }
 
@@ -406,14 +527,27 @@ export function useMemoraState() {
         totalTimeSpentSeconds: stats.totalTimeSpentSeconds + timeSpentSeconds,
         historyLog: updatedHistory,
       };
+      setStats(newStats);
       saveStats(newStats);
-      if (user) {
-        syncStatsToSupabase(user.id, newStats);
+      pendingStatsRef.current = newStats;
+
+      // Persist pending buffer to localStorage so nothing is lost even on unexpected power loss
+      try {
+        localStorage.setItem(
+          'memora_pending_review_sync',
+          JSON.stringify({
+            cards: Array.from(pendingReviewCardsRef.current.values()),
+            stats: newStats,
+          })
+        );
+      } catch {
+        // ignore storage errors
       }
 
+      // NOTE: Database write is strictly deferred until leaving review or browser close
       return updatedCard;
     },
-    [cards, reviewLogs, stats, user]
+    [cards, reviewLogs, stats]
   );
 
   // Bulk Import
@@ -438,10 +572,15 @@ export function useMemoraState() {
         flagged: false,
       }));
 
-      saveCards([...createdCards, ...cards]);
+      const updated = [...createdCards, ...cards];
+      setCards(updated);
+      saveCards(updated);
+      if (user) {
+        syncCardsBatchToSupabase(user.id, createdCards);
+      }
       return createdCards.length;
     },
-    [cards]
+    [cards, user]
   );
 
   // Settings Updater
@@ -475,6 +614,7 @@ export function useMemoraState() {
     submitCardReview,
     importCardsBatch,
     updateUserSettings,
+    flushReviewSession,
     resetReviewStats: storageResetReviewStats,
   };
 }

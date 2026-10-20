@@ -1,6 +1,16 @@
 import { Card, Deck, ReviewLog, UserSettings, UserStats } from '../types';
 import { INITIAL_CARDS, INITIAL_DECKS, INITIAL_SETTINGS, INITIAL_STATS } from '../data/demoData';
-import { supabase } from './supabase';
+import { supabase, supabaseUrlClean, supabaseAnonKeyClean } from './supabase';
+
+let lastSelfDbWriteTime = 0;
+
+export function markSelfDbWrite() {
+  lastSelfDbWriteTime = Date.now();
+}
+
+export function isSelfDbWriteRecent(thresholdMs: number = 4000): boolean {
+  return Date.now() - lastSelfDbWriteTime < thresholdMs;
+}
 
 const STORAGE_KEYS = {
   DECKS: 'memora_decks_v2',
@@ -123,9 +133,15 @@ export function loadDecks(): Deck[] {
   }
 }
 
-export function saveDecks(decks: Deck[]) {
-  localStorage.setItem(STORAGE_KEYS.DECKS, JSON.stringify(decks));
-  storageEventBus.dispatchEvent(new Event('decks_updated'));
+export function saveDecks(decks: Deck[], skipEvent: boolean = false) {
+  try {
+    localStorage.setItem(STORAGE_KEYS.DECKS, JSON.stringify(decks));
+  } catch (err) {
+    console.warn('[Storage] saveDecks failed:', err);
+  }
+  if (!skipEvent) {
+    storageEventBus.dispatchEvent(new Event('decks_updated'));
+  }
   syncToIndexedDB(loadCards(), undefined, decks).catch(() => {});
 }
 
@@ -154,11 +170,19 @@ export function loadCards(): Card[] {
   }
 }
 
-export function saveCards(cards: Card[]) {
-  localStorage.setItem(STORAGE_KEYS.CARDS, JSON.stringify(cards));
-  storageEventBus.dispatchEvent(new Event('cards_updated'));
-  // Sync to IndexedDB so the SW can read the real dueCount at notification time
-  syncToIndexedDB(cards, undefined, loadDecks()).catch(() => {});
+export function saveCards(cards: Card[], skipIndexedDB: boolean = false, skipEvent: boolean = false) {
+  try {
+    localStorage.setItem(STORAGE_KEYS.CARDS, JSON.stringify(cards));
+  } catch (err) {
+    console.warn('[Storage] saveCards failed:', err);
+  }
+  if (!skipEvent) {
+    storageEventBus.dispatchEvent(new Event('cards_updated'));
+  }
+  // Sync to IndexedDB so the SW can read the real dueCount at notification time (skip during review sessions)
+  if (!skipIndexedDB) {
+    syncToIndexedDB(cards, undefined, loadDecks()).catch(() => {});
+  }
 }
 
 export function loadReviewLogs(): ReviewLog[] {
@@ -210,9 +234,15 @@ export function loadStats(): UserStats {
   }
 }
 
-export function saveStats(stats: UserStats) {
-  localStorage.setItem(STORAGE_KEYS.STATS, JSON.stringify(stats));
-  storageEventBus.dispatchEvent(new Event('stats_updated'));
+export function saveStats(stats: UserStats, skipEvent: boolean = false) {
+  try {
+    localStorage.setItem(STORAGE_KEYS.STATS, JSON.stringify(stats));
+  } catch (err) {
+    console.warn('[Storage] saveStats failed:', err);
+  }
+  if (!skipEvent) {
+    storageEventBus.dispatchEvent(new Event('stats_updated'));
+  }
 }
 
 export function resetReviewStats() {
@@ -317,20 +347,46 @@ export async function syncToSupabase(userId: string | null | undefined, cards: C
  * Sync user stats (streak, total reviews, history) to Supabase.
  * This allows multi-device continuity: stats are loaded from Supabase on login.
  */
-export async function syncStatsToSupabase(userId: string | null | undefined, stats: UserStats): Promise<void> {
+export async function syncStatsToSupabase(
+  userId: string | null | undefined,
+  stats: UserStats,
+  keepAlive: boolean = false
+): Promise<void> {
   if (!userId) return;
 
-  try {
-    const { error } = await supabase.from('user_stats').upsert({
-      user_id: userId,
-      streak: stats.streak,
-      total_reviews_count: stats.totalReviewsCount,
-      total_time_spent_seconds: stats.totalTimeSpentSeconds,
-      last_active_date: stats.lastActiveDate,
-      history_log: stats.historyLog,
-      updated_at: new Date().toISOString(),
-    }, { onConflict: 'user_id' });
+  markSelfDbWrite();
 
+  const payload = {
+    user_id: userId,
+    streak: stats.streak,
+    total_reviews_count: stats.totalReviewsCount,
+    total_time_spent_seconds: stats.totalTimeSpentSeconds,
+    last_active_date: stats.lastActiveDate,
+    history_log: stats.historyLog,
+    updated_at: new Date().toISOString(),
+  };
+
+  if (keepAlive && supabaseUrlClean && supabaseAnonKeyClean && typeof fetch !== 'undefined') {
+    try {
+      fetch(`${supabaseUrlClean}/rest/v1/user_stats`, {
+        method: 'POST',
+        headers: {
+          apikey: supabaseAnonKeyClean,
+          Authorization: `Bearer ${supabaseAnonKeyClean}`,
+          'Content-Type': 'application/json',
+          Prefer: 'resolution=merge-duplicates',
+        },
+        body: JSON.stringify(payload),
+        keepalive: true,
+      }).catch(() => {});
+      return;
+    } catch (err) {
+      console.warn('[Supabase keepalive stats failed]:', err);
+    }
+  }
+
+  try {
+    const { error } = await supabase.from('user_stats').upsert(payload, { onConflict: 'user_id' });
     if (error) console.error('[Supabase Sync] Stats error:', error);
   } catch (err) {
     console.error('[Supabase Sync] Stats exception:', err);
@@ -338,112 +394,251 @@ export async function syncStatsToSupabase(userId: string | null | undefined, sta
 }
 
 /**
- * Fetch user stats from Supabase and merge with local stats (take the most recent).
+ * Sync only a specific batch of cards to Supabase (e.g., cards modified during a review session).
+ * Supports keepAlive for browser close / tab unload events.
  */
-export async function fetchStatsFromSupabase(userId: string): Promise<UserStats | null> {
-  try {
-    const { data, error } = await supabase
-      .from('user_stats')
-      .select('*')
-      .eq('user_id', userId)
-      .maybeSingle();
+export async function syncCardsBatchToSupabase(
+  userId: string | null | undefined,
+  cards: Card[],
+  keepAlive: boolean = false
+): Promise<void> {
+  if (!userId || cards.length === 0) return;
 
-    if (error) {
-      console.error('[Supabase Fetch] Stats error:', error);
-      return null;
+  const dbCards = cards.map((card) => ({
+    id: card.id,
+    user_id: userId,
+    deck_id: card.deckId,
+    question: card.question,
+    answer: card.answer,
+    tags: card.tags || [],
+    difficulty: card.difficulty,
+    ease: card.ease,
+    interval: card.interval,
+    repetitions: card.repetitions,
+    lapses: card.lapses,
+    stability: card.stability,
+    state: card.state,
+    favorite: !!card.favorite,
+    flagged: !!card.flagged,
+    due_date: card.dueDate,
+    created_at: card.createdAt,
+    updated_at: card.updatedAt || new Date().toISOString(),
+  }));
+
+  markSelfDbWrite();
+
+  if (keepAlive && supabaseUrlClean && supabaseAnonKeyClean && typeof fetch !== 'undefined') {
+    try {
+      fetch(`${supabaseUrlClean}/rest/v1/cards`, {
+        method: 'POST',
+        headers: {
+          apikey: supabaseAnonKeyClean,
+          Authorization: `Bearer ${supabaseAnonKeyClean}`,
+          'Content-Type': 'application/json',
+          Prefer: 'resolution=merge-duplicates',
+        },
+        body: JSON.stringify(dbCards),
+        keepalive: true,
+      }).catch(() => {});
+      return;
+    } catch (err) {
+      console.warn('[Supabase keepalive cards batch failed]:', err);
     }
+  }
 
-    if (!data) return null;
-
-    const remoteStats: UserStats = {
-      streak: data.streak ?? 0,
-      totalReviewsCount: data.total_reviews_count ?? 0,
-      totalTimeSpentSeconds: data.total_time_spent_seconds ?? 0,
-      lastActiveDate: data.last_active_date ?? null,
-      historyLog: (data.history_log as Record<string, number>) ?? {},
-    };
-
-    // Merge: take the higher streak / review count to avoid data loss
-    const localStats = loadStats();
-    const merged: UserStats = {
-      streak: Math.max(remoteStats.streak, localStats.streak),
-      totalReviewsCount: Math.max(remoteStats.totalReviewsCount, localStats.totalReviewsCount),
-      totalTimeSpentSeconds: Math.max(remoteStats.totalTimeSpentSeconds, localStats.totalTimeSpentSeconds),
-      lastActiveDate: remoteStats.lastActiveDate ?? localStats.lastActiveDate,
-      historyLog: { ...localStats.historyLog, ...remoteStats.historyLog },
-    };
-
-    saveStats(merged);
-    return merged;
+  try {
+    const { error: cardsError } = await supabase.from('cards').upsert(dbCards, { onConflict: 'id' });
+    if (cardsError) console.error('[Supabase Batch Sync] Cards error:', cardsError);
   } catch (err) {
-    console.error('[Supabase Fetch] Stats exception:', err);
-    return null;
+    console.error('[Supabase Batch Sync] Exception:', err);
   }
 }
 
-export async function fetchFromSupabase(userId: string): Promise<{ decks: Deck[]; cards: Card[] } | null> {
-  try {
-    // Fetch Decks
-    const { data: dbDecks, error: decksError } = await supabase
-      .from('decks')
-      .select('*')
-      .eq('user_id', userId);
+let lastFetchStatsTime = 0;
+let lastFetchStatsPromise: Promise<UserStats | null> | null = null;
+let consecutiveStatsFetchFailures = 0;
+let nextAllowedStatsFetchTime = 0;
 
-    let parsedDecks: Deck[] = [];
-    if (decksError) {
-      console.error('[Supabase Fetch] Decks error:', decksError);
-    } else if (dbDecks && dbDecks.length > 0) {
-      parsedDecks = dbDecks.map(d => ({
-        id: d.id,
-        title: d.title,
-        description: d.description || '',
-        folder: d.folder || 'Général',
-        color: d.color || 'indigo',
-        icon: d.icon || 'Layers',
-        telegramReminderEnabled: !!d.telegram_reminder_enabled,
-        createdAt: d.created_at,
-      }));
-      saveDecks(parsedDecks);
-    }
+/**
+ * Fetch user stats from Supabase and merge with local stats (take the most recent).
+ * Includes deduplication, throttling, and exponential backoff on network failure.
+ */
+export async function fetchStatsFromSupabase(userId: string): Promise<UserStats | null> {
+  if (!userId) return null;
 
-    // Fetch Cards
-    const { data: dbCards, error: cardsError } = await supabase
-      .from('cards')
-      .select('*')
-      .eq('user_id', userId);
-
-    let parsedCards: Card[] = [];
-    if (cardsError) {
-      console.error('[Supabase Fetch] Cards error:', cardsError);
-    } else if (dbCards && dbCards.length > 0) {
-      parsedCards = dbCards.map(c => ({
-        id: c.id,
-        deckId: c.deck_id,
-        question: c.question,
-        answer: c.answer,
-        tags: c.tags || [],
-        difficulty: c.difficulty,
-        ease: c.ease,
-        interval: c.interval,
-        repetitions: c.repetitions,
-        lapses: c.lapses,
-        stability: c.stability,
-        state: c.state,
-        favorite: !!c.favorite,
-        flagged: !!c.flagged,
-        dueDate: c.due_date,
-        createdAt: c.created_at,
-        updatedAt: c.updated_at,
-        lastReviewedAt: null,
-      }));
-      saveCards(parsedCards);
-    }
-
-    return { decks: parsedDecks, cards: parsedCards };
-  } catch (err) {
-    console.error('[Supabase Fetch] Exception:', err);
+  const now = Date.now();
+  if (now < nextAllowedStatsFetchTime) {
     return null;
   }
+
+  if (lastFetchStatsPromise) {
+    return lastFetchStatsPromise;
+  }
+
+  if (now - lastFetchStatsTime < 3000) {
+    return null;
+  }
+
+  lastFetchStatsPromise = (async () => {
+    lastFetchStatsTime = Date.now();
+    try {
+      const { data, error } = await supabase
+        .from('user_stats')
+        .select('*')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      if (error) {
+        throw error;
+      }
+
+      consecutiveStatsFetchFailures = 0;
+      nextAllowedStatsFetchTime = 0;
+
+      if (!data) return null;
+
+      const remoteStats: UserStats = {
+        streak: data.streak ?? 0,
+        totalReviewsCount: data.total_reviews_count ?? 0,
+        totalTimeSpentSeconds: data.total_time_spent_seconds ?? 0,
+        lastActiveDate: data.last_active_date ?? null,
+        historyLog: (data.history_log as Record<string, number>) ?? {},
+      };
+
+      // Merge: take the higher streak / review count to avoid data loss
+      const localStats = loadStats();
+      const merged: UserStats = {
+        streak: Math.max(remoteStats.streak, localStats.streak),
+        totalReviewsCount: Math.max(remoteStats.totalReviewsCount, localStats.totalReviewsCount),
+        totalTimeSpentSeconds: Math.max(remoteStats.totalTimeSpentSeconds, localStats.totalTimeSpentSeconds),
+        lastActiveDate: remoteStats.lastActiveDate ?? localStats.lastActiveDate,
+        historyLog: { ...localStats.historyLog, ...remoteStats.historyLog },
+      };
+
+      saveStats(merged, true);
+      return merged;
+    } catch (err: any) {
+      consecutiveStatsFetchFailures++;
+      const backoffSecs = Math.min(30, 3 * Math.pow(2, consecutiveStatsFetchFailures - 1));
+      nextAllowedStatsFetchTime = Date.now() + backoffSecs * 1000;
+      if (consecutiveStatsFetchFailures <= 2) {
+        console.warn(`[Supabase Fetch] Stats network issue (${err?.message || 'Failed to fetch'}). Retrying in ${backoffSecs}s.`);
+      }
+      return null;
+    } finally {
+      lastFetchStatsPromise = null;
+    }
+  })();
+
+  return lastFetchStatsPromise;
+}
+
+let lastFetchCardsTime = 0;
+let lastFetchCardsPromise: Promise<{ decks: Deck[]; cards: Card[] } | null> | null = null;
+let consecutiveCardsFetchFailures = 0;
+let nextAllowedCardsFetchTime = 0;
+
+/**
+ * Fetch Decks and Cards from Supabase with request deduplication, throttling,
+ * and circuit breaker with exponential backoff on network failure.
+ */
+export async function fetchFromSupabase(userId: string): Promise<{ decks: Deck[]; cards: Card[] } | null> {
+  if (!userId) return null;
+
+  const now = Date.now();
+  if (now < nextAllowedCardsFetchTime) {
+    return null;
+  }
+
+  if (lastFetchCardsPromise) {
+    return lastFetchCardsPromise;
+  }
+
+  if (now - lastFetchCardsTime < 3000) {
+    return null;
+  }
+
+  lastFetchCardsPromise = (async () => {
+    lastFetchCardsTime = Date.now();
+    try {
+      // Fetch Decks
+      const { data: dbDecks, error: decksError } = await supabase
+        .from('decks')
+        .select('*')
+        .eq('user_id', userId);
+
+      if (decksError) {
+        throw decksError;
+      }
+
+      // Fetch Cards
+      const { data: dbCards, error: cardsError } = await supabase
+        .from('cards')
+        .select('*')
+        .eq('user_id', userId);
+
+      if (cardsError) {
+        throw cardsError;
+      }
+
+      consecutiveCardsFetchFailures = 0;
+      nextAllowedCardsFetchTime = 0;
+
+      let parsedDecks: Deck[] = [];
+      if (dbDecks && dbDecks.length > 0) {
+        parsedDecks = dbDecks.map((d) => ({
+          id: d.id,
+          title: d.title,
+          description: d.description || '',
+          folder: d.folder || 'Général',
+          color: d.color || 'indigo',
+          icon: d.icon || 'Layers',
+          telegramReminderEnabled: !!d.telegram_reminder_enabled,
+          createdAt: d.created_at,
+        }));
+        saveDecks(parsedDecks, true);
+      }
+
+      let parsedCards: Card[] = [];
+      if (dbCards && dbCards.length > 0) {
+        parsedCards = dbCards.map((c) => ({
+          id: c.id,
+          deckId: c.deck_id,
+          question: c.question,
+          answer: c.answer,
+          tags: c.tags || [],
+          difficulty: c.difficulty,
+          ease: c.ease,
+          interval: c.interval,
+          repetitions: c.repetitions,
+          lapses: c.lapses,
+          stability: c.stability,
+          state: c.state,
+          favorite: !!c.favorite,
+          flagged: !!c.flagged,
+          dueDate: c.due_date,
+          createdAt: c.created_at,
+          updatedAt: c.updated_at,
+          lastReviewedAt: null,
+        }));
+        saveCards(parsedCards, true, true);
+      }
+
+      return { decks: parsedDecks, cards: parsedCards };
+    } catch (err: any) {
+      consecutiveCardsFetchFailures++;
+      const backoffSecs = Math.min(30, 3 * Math.pow(2, consecutiveCardsFetchFailures - 1));
+      nextAllowedCardsFetchTime = Date.now() + backoffSecs * 1000;
+      if (consecutiveCardsFetchFailures <= 2) {
+        console.warn(`[Supabase Fetch] Cards/Decks network issue (${err?.message || 'Failed to fetch'}). Retrying in ${backoffSecs}s.`);
+      }
+      return null;
+    } finally {
+      lastFetchCardsPromise = null;
+    }
+  })();
+
+  return lastFetchCardsPromise;
 }
 
 /**

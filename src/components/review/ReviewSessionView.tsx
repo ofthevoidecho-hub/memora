@@ -29,6 +29,7 @@ interface ReviewSessionViewProps {
   onToggleFavorite: (cardId: string) => void;
   onToggleFlag: (cardId: string) => void;
   onOpenEditCard: (card: Card) => void;
+  onLeaveReviewSession?: () => void;
 }
 
 export const ReviewSessionView: React.FC<ReviewSessionViewProps> = ({
@@ -41,6 +42,7 @@ export const ReviewSessionView: React.FC<ReviewSessionViewProps> = ({
   onToggleFavorite,
   onToggleFlag,
   onOpenEditCard,
+  onLeaveReviewSession,
 }) => {
   // Session States: 'briefing' | 'active' | 'completed'
   const [sessionState, setSessionState] = useState<'briefing' | 'active' | 'completed'>('briefing');
@@ -142,6 +144,13 @@ export const ReviewSessionView: React.FC<ReviewSessionViewProps> = ({
     }
   }, [currentIndex, sessionState, targetDeckId]);
 
+  // Flush review updates to database on component unmount
+  useEffect(() => {
+    return () => {
+      onLeaveReviewSession?.();
+    };
+  }, [onLeaveReviewSession]);
+
   const startSession = () => {
     if (sessionQueue.length === 0) return;
     setSessionState('active');
@@ -215,9 +224,10 @@ export const ReviewSessionView: React.FC<ReviewSessionViewProps> = ({
       setIsAnswerRevealed(false);
       cardStartTimeRef.current = Date.now();
     } else {
-      // Complete Session
+      // Complete Session — flush all review changes to database in one batch
       localStorage.removeItem(`memora_saved_index_${targetDeckId || 'all'}`);
       setSessionState('completed');
+      onLeaveReviewSession?.();
       try {
         confetti({
           particleCount: 100,
@@ -372,7 +382,10 @@ export const ReviewSessionView: React.FC<ReviewSessionViewProps> = ({
             )}
 
             <button
-              onClick={() => setActiveTab('dashboard')}
+              onClick={() => {
+                onLeaveReviewSession?.();
+                setActiveTab('dashboard');
+              }}
               className="w-full py-3 px-4 rounded-xl text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200 text-xs font-semibold"
             >
               Retour au tableau de bord
@@ -436,7 +449,10 @@ export const ReviewSessionView: React.FC<ReviewSessionViewProps> = ({
           </div>
 
           <button
-            onClick={() => setActiveTab('dashboard')}
+            onClick={() => {
+              onLeaveReviewSession?.();
+              setActiveTab('dashboard');
+            }}
             className="w-full py-3.5 px-6 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-xs shadow-md shadow-indigo-600/20 transition-all"
           >
             Retour au tableau de bord
@@ -523,6 +539,7 @@ export const ReviewSessionView: React.FC<ReviewSessionViewProps> = ({
             onClick={() => {
               if (confirm('Voulez-vous quitter la session en cours ?')) {
                 localStorage.setItem(`memora_saved_index_${targetDeckId || 'all'}`, currentIndex.toString());
+                onLeaveReviewSession?.();
                 setSessionState('briefing');
               }
             }}

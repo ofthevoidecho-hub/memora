@@ -14,4 +14,6 @@ supabaseUrl = supabaseUrl.replace(/["']/g, "").trim();
 if (supabaseUrl.endsWith('/')) supabaseUrl = supabaseUrl.slice(0, -1);
 if (supabaseUrl.endsWith('/rest/v1')) supabaseUrl = supabaseUrl.replace('/rest/v1', '');
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey.replace(/["']/g, "").trim());
+export const supabaseUrlClean = supabaseUrl;
+export const supabaseAnonKeyClean = supabaseAnonKey.replace(/["']/g, "").trim();
+export const supabase = createClient(supabaseUrl, supabaseAnonKeyClean);

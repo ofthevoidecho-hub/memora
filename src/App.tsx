@@ -40,6 +40,7 @@ export default function App() {
     submitCardReview,
     importCardsBatch,
     updateUserSettings,
+    flushReviewSession,
     resetReviewStats,
   } = useMemoraState();
 
@@ -95,7 +96,20 @@ export default function App() {
     }
   };
 
+  const handleNavigateTab = (tab: ActiveTab) => {
+    if (activeTab === 'review' && tab !== 'review') {
+      flushReviewSession();
+    }
+    if (tab === 'review' && activeTab !== 'review') {
+      setTargetDeckForReview(null);
+    }
+    setActiveTab(tab);
+  };
+
   const handleSelectDeckForReview = (deckId: string) => {
+    if (activeTab === 'review' && targetDeckForReview !== deckId) {
+      flushReviewSession();
+    }
     setTargetDeckForReview(deckId);
     setActiveTab('review');
   };
@@ -111,10 +125,7 @@ export default function App() {
       {/* Desktop Navigation Sidebar */}
       <Sidebar
         activeTab={activeTab}
-        setActiveTab={(tab) => {
-          if (tab === 'review' && activeTab !== 'review') setTargetDeckForReview(null);
-          setActiveTab(tab);
-        }}
+        setActiveTab={handleNavigateTab}
         dueCardsCount={dueCards.length}
         difficultCardsCount={difficultCards.length}
         favoriteCardsCount={favoriteCards.length}
@@ -129,10 +140,7 @@ export default function App() {
         {/* Header */}
         <Header
           activeTab={activeTab}
-          setActiveTab={(tab) => {
-            if (tab === 'review' && activeTab !== 'review') setTargetDeckForReview(null);
-            setActiveTab(tab);
-          }}
+          setActiveTab={handleNavigateTab}
           streak={stats.streak}
           dueCardsCount={dueCards.length}
           onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
@@ -148,7 +156,7 @@ export default function App() {
               dueCards={dueCards}
               stats={stats}
               settings={settings}
-              setActiveTab={setActiveTab}
+              setActiveTab={handleNavigateTab}
               onSelectDeckForReview={handleSelectDeckForReview}
               onOpenQuickAddCard={handleOpenQuickAddCard}
               onOpenQuickAddDeck={() => setIsDeckModalOpen(true)}
@@ -174,11 +182,12 @@ export default function App() {
               decks={decks}
               targetDeckId={targetDeckForReview}
               settings={settings}
-              setActiveTab={setActiveTab}
+              setActiveTab={handleNavigateTab}
               onSubmitRating={submitCardReview}
               onToggleFavorite={toggleFavorite}
               onToggleFlag={toggleFlag}
               onOpenEditCard={handleOpenEditCard}
+              onLeaveReviewSession={flushReviewSession}
             />
           )}
 
@@ -220,10 +229,7 @@ export default function App() {
       {/* Mobile Bottom Bar Navigation */}
       <MobileNav
         activeTab={activeTab}
-        setActiveTab={(tab) => {
-          if (tab === 'review' && activeTab !== 'review') setTargetDeckForReview(null);
-          setActiveTab(tab);
-        }}
+        setActiveTab={handleNavigateTab}
         dueCardsCount={dueCards.length}
       />
 
@@ -233,7 +239,7 @@ export default function App() {
         onClose={() => setIsCommandPaletteOpen(false)}
         cards={cards}
         decks={decks}
-        setActiveTab={setActiveTab}
+        setActiveTab={handleNavigateTab}
         onSelectDeckForReview={handleSelectDeckForReview}
         onOpenQuickAddCard={handleOpenQuickAddCard}
         onToggleTheme={handleToggleTheme}

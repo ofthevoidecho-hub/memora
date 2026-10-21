@@ -24,6 +24,7 @@ import {
   deleteCardInSupabase,
   deleteDeckInSupabase,
   isSelfDbWriteRecent,
+  markSelfDbWrite,
   syncToIndexedDB,
 } from '../lib/storage';
 import { supabase } from '../lib/supabase';
@@ -487,6 +488,18 @@ export function useMemoraState() {
       // Buffer updated card for bulk database sync when leaving review
       pendingReviewCardsRef.current.set(cardId, updatedCard);
 
+      // ── Immediate fire-and-forget sync to Supabase ──────────────────────────
+      // Sends each reviewed card to the DB as soon as it's rated so that
+      // data is never lost if the session is interrupted (crash, hard reload, etc.).
+      // The bulk flush at session end remains as a safety net for stats.
+      if (userId) {
+        markSelfDbWrite();
+        updateCardInSupabase(updatedCard).catch(() => {
+          // Non-blocking: the pending buffer + localStorage backup will cover this
+        });
+      }
+      // ────────────────────────────────────────────────────────────────────────
+
       // Save Review Log locally
       const log: ReviewLog = {
         id: 'log_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
@@ -544,10 +557,9 @@ export function useMemoraState() {
         // ignore storage errors
       }
 
-      // NOTE: Database write is strictly deferred until leaving review or browser close
       return updatedCard;
     },
-    [cards, reviewLogs, stats]
+    [cards, reviewLogs, stats, userId]
   );
 
   // Bulk Import

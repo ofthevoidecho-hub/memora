@@ -1,6 +1,7 @@
 import React from 'react';
 import { Flame, Award, TrendingUp, CheckCircle2, Clock, Calendar, BarChart3, Target, Sparkles } from 'lucide-react';
 import { Card, UserStats } from '../../types';
+import { isCardDifficult } from '../../lib/spacedRepetition';
 import { Heatmap } from '../ui/Heatmap';
 
 interface StatisticsViewProps {
@@ -26,7 +27,7 @@ export const StatisticsView: React.FC<StatisticsViewProps> = ({ cards, stats }) 
   const newCards = cards.filter((c) => c.state === 'new').length;
   const learningCards = cards.filter((c) => c.state === 'learning' || c.state === 'relearning').length;
   const masteredCards = cards.filter((c) => c.state === 'review' && c.interval >= 14).length;
-  const strugglingCards = cards.filter((c) => c.lapses > 1 || c.difficulty >= 7).length;
+  const strugglingCards = cards.filter(isCardDifficult).length;
 
   const retentionPercent =
     totalCards > 0 ? Math.round(((totalCards - strugglingCards) / totalCards) * 100) : 100;

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Search, Star, Flag, Trash2, Edit2, Filter, Layers, Plus, BookOpen } from 'lucide-react';
 import { Card, Deck } from '../../types';
-import { isCardDue } from '../../lib/spacedRepetition';
+import { isCardDue, isCardDifficult } from '../../lib/spacedRepetition';
 
 interface LibraryViewProps {
   cards: Card[];
@@ -61,7 +61,7 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
     // Status filter
     let matchesStatus = true;
     if (selectedStatus === 'due') matchesStatus = isCardDue(card);
-    if (selectedStatus === 'difficult') matchesStatus = card.lapses > 1 || card.difficulty >= 7;
+    if (selectedStatus === 'difficult') matchesStatus = isCardDifficult(card);
     if (selectedStatus === 'new') matchesStatus = card.state === 'new';
     if (selectedStatus === 'learned') matchesStatus = card.state === 'review' && card.interval >= 7;
     if (selectedStatus === 'favorites') matchesStatus = card.favorite;

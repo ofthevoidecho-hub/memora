@@ -15,6 +15,8 @@ import {
   ArrowRight,
   HelpCircle,
   Shuffle,
+  Layers,
+  BookOpen,
 } from 'lucide-react';
 import { ActiveTab, Card, CardRating, Deck, UserSettings } from '../../types';
 import { getFormattedNextInterval, isCardDue, isCardDifficult } from '../../lib/spacedRepetition';
@@ -69,7 +71,10 @@ export const ReviewSessionView: React.FC<ReviewSessionViewProps> = ({
     ? selectedDeck.title
     : 'Toutes les révisions';
 
-  // Extract the numeric part from a card ID for natural ordering (e.g. "inf65" -> 65)
+  // Review Mode: 'due' (SRS due cards only) | 'all' (all deck cards sequentially)
+  const [reviewMode, setReviewMode] = useState<'due' | 'all'>('due');
+
+  // Extract the numeric part from a card ID for natural ordering (e.g. "fa31" -> 31)
   const getCardSortKey = (card: Card): number => {
     const match = card.id.match(/\d+/);
     return match ? parseInt(match[0], 10) : 0;
@@ -93,8 +98,12 @@ export const ReviewSessionView: React.FC<ReviewSessionViewProps> = ({
       if (targetDeckId) {
         pool = cards.filter((c) => c.deckId === targetDeckId);
       }
-      const dueList = pool.filter((c) => isCardDue(c));
-      queue = dueList.slice(0, settings.maxReviewsPerDay || 100);
+      if (reviewMode === 'all') {
+        queue = pool;
+      } else {
+        const dueList = pool.filter((c) => isCardDue(c));
+        queue = dueList.slice(0, settings.maxReviewsPerDay || 100);
+      }
     }
 
     // Always sort queue by numeric card ID so cards appear in correct order when shuffle is off
@@ -115,12 +124,30 @@ export const ReviewSessionView: React.FC<ReviewSessionViewProps> = ({
       setSessionQueue(sortedQueue);
     }
 
-    const storedIndex = localStorage.getItem(`memora_saved_index_${targetDeckId || 'all'}`);
-    const initialIndex = storedIndex ? parseInt(storedIndex, 10) : 0;
-    setCurrentIndex(initialIndex < sortedQueue.length ? initialIndex : 0);
+    // Restore position: prioritize saved card ID for precision, fallback to saved index
+    const storageKeySuffix = `${targetDeckId || 'all'}_${reviewMode}`;
+    const savedCardId = localStorage.getItem(`memora_saved_card_id_${storageKeySuffix}`) || localStorage.getItem(`memora_saved_card_id_${targetDeckId || 'all'}`);
+    let targetIndex = 0;
+
+    if (savedCardId) {
+      const foundIdx = sortedQueue.findIndex((c) => c.id === savedCardId);
+      if (foundIdx !== -1) {
+        targetIndex = foundIdx;
+      }
+    } else {
+      const storedIndex = localStorage.getItem(`memora_saved_index_${storageKeySuffix}`) || localStorage.getItem(`memora_saved_index_${targetDeckId || 'all'}`);
+      if (storedIndex) {
+        const parsed = parseInt(storedIndex, 10);
+        if (!isNaN(parsed) && parsed < sortedQueue.length) {
+          targetIndex = parsed;
+        }
+      }
+    }
+
+    setCurrentIndex(targetIndex);
     setIsAnswerRevealed(false);
     setRatingCounts({ 1: 0, 2: 0, 3: 0, 4: 0 });
-  }, [cards, targetDeckId, settings.maxReviewsPerDay, isShuffleEnabled, sessionState]);
+  }, [cards, targetDeckId, settings.maxReviewsPerDay, isShuffleEnabled, sessionState, reviewMode]);
 
   useEffect(() => {
     prepareQueue();
@@ -137,12 +164,19 @@ export const ReviewSessionView: React.FC<ReviewSessionViewProps> = ({
     return () => clearInterval(timer);
   }, [sessionState, sessionStartTime]);
 
-  // Save current index to localStorage
+  // Save current card & index to localStorage
   useEffect(() => {
-    if (sessionState === 'active') {
+    if (sessionState === 'active' && sessionQueue[currentIndex]) {
+      const currentCard = sessionQueue[currentIndex];
+      const storageKeySuffix = `${targetDeckId || 'all'}_${reviewMode}`;
+      localStorage.setItem(`memora_saved_index_${storageKeySuffix}`, currentIndex.toString());
       localStorage.setItem(`memora_saved_index_${targetDeckId || 'all'}`, currentIndex.toString());
+      if (currentCard?.id) {
+        localStorage.setItem(`memora_saved_card_id_${storageKeySuffix}`, currentCard.id);
+        localStorage.setItem(`memora_saved_card_id_${targetDeckId || 'all'}`, currentCard.id);
+      }
     }
-  }, [currentIndex, sessionState, targetDeckId]);
+  }, [currentIndex, sessionState, targetDeckId, sessionQueue, reviewMode]);
 
   // Flush review updates to database on component unmount
   useEffect(() => {
@@ -225,7 +259,11 @@ export const ReviewSessionView: React.FC<ReviewSessionViewProps> = ({
       cardStartTimeRef.current = Date.now();
     } else {
       // Complete Session — flush all review changes to database in one batch
+      const storageKeySuffix = `${targetDeckId || 'all'}_${reviewMode}`;
+      localStorage.removeItem(`memora_saved_index_${storageKeySuffix}`);
       localStorage.removeItem(`memora_saved_index_${targetDeckId || 'all'}`);
+      localStorage.removeItem(`memora_saved_card_id_${storageKeySuffix}`);
+      localStorage.removeItem(`memora_saved_card_id_${targetDeckId || 'all'}`);
       setSessionState('completed');
       onLeaveReviewSession?.();
       try {
@@ -312,11 +350,43 @@ export const ReviewSessionView: React.FC<ReviewSessionViewProps> = ({
             </p>
           </div>
 
+          {/* Mode Selector: SRS dues vs All cards */}
+          {!isDifficultSession && (
+            <div className="flex p-1 bg-neutral-100 dark:bg-neutral-800/80 rounded-2xl max-w-sm mx-auto">
+              <button
+                type="button"
+                onClick={() => setReviewMode('due')}
+                className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                  reviewMode === 'due'
+                    ? 'bg-white dark:bg-neutral-900 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                    : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200'
+                }`}
+              >
+                <Clock className="w-3.5 h-3.5" />
+                <span>Cartes dues (SRS)</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setReviewMode('all')}
+                className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                  reviewMode === 'all'
+                    ? 'bg-white dark:bg-neutral-900 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                    : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200'
+                }`}
+              >
+                <BookOpen className="w-3.5 h-3.5" />
+                <span>Tout le deck ({cards.filter(c => targetDeckId ? c.deckId === targetDeckId : true).length})</span>
+              </button>
+            </div>
+          )}
+
           {sessionQueue.length > 0 ? (
             <div className="space-y-3">
               <div className="grid grid-cols-3 gap-3 py-4 border-y border-neutral-100 dark:border-neutral-800">
                 <div className="p-3 rounded-2xl bg-neutral-50 dark:bg-neutral-800/50">
-                  <span className="block text-[10px] text-neutral-400 uppercase font-semibold">Cartes Dues</span>
+                  <span className="block text-[10px] text-neutral-400 uppercase font-semibold">
+                    {reviewMode === 'all' ? 'Total cartes' : 'Cartes Dues'}
+                  </span>
                   <span className="text-xl font-bold text-amber-500">{sessionQueue.length}</span>
                 </div>
                 <div className="p-3 rounded-2xl bg-neutral-50 dark:bg-neutral-800/50">
@@ -349,24 +419,40 @@ export const ReviewSessionView: React.FC<ReviewSessionViewProps> = ({
                 <label className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
                   Commencer à la question N° :
                 </label>
-                <input
-                  type="number"
-                  min="1"
-                  max={sessionQueue.length}
-                  value={currentIndex + 1}
-                  onChange={(e) => {
-                    const val = parseInt(e.target.value, 10);
-                    if (!isNaN(val) && val >= 1 && val <= sessionQueue.length) {
-                      setCurrentIndex(val - 1);
-                    }
-                  }}
-                  className="w-20 px-3 py-1.5 text-center rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    min="1"
+                    max={sessionQueue.length}
+                    value={currentIndex + 1}
+                    onChange={(e) => {
+                      const val = parseInt(e.target.value, 10);
+                      if (!isNaN(val) && val >= 1 && val <= sessionQueue.length) {
+                        setCurrentIndex(val - 1);
+                      }
+                    }}
+                    className="w-20 px-3 py-1.5 text-center rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                  <span className="text-xs text-neutral-400">/ {sessionQueue.length}</span>
+                </div>
+                {sessionQueue[currentIndex] && (
+                  <span className="text-[11px] text-neutral-500 dark:text-neutral-400 font-medium max-w-sm truncate italic">
+                    « {sessionQueue[currentIndex].question.slice(0, 45)}... »
+                  </span>
+                )}
               </div>
             </div>
           ) : (
-            <div className="p-6 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-xs font-semibold">
-              🎉 Aucune carte due pour ce deck aujourd'hui ! Revenez demain.
+            <div className="p-6 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-xs font-semibold space-y-3">
+              <div>🎉 Aucune carte due pour ce deck aujourd'hui selon l'algorithme d'espacement !</div>
+              <button
+                type="button"
+                onClick={() => setReviewMode('all')}
+                className="inline-flex items-center gap-1.5 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm mx-auto"
+              >
+                <BookOpen className="w-3.5 h-3.5" />
+                <span>Réviser tout le deck quand même</span>
+              </button>
             </div>
           )}
 

@@ -153,6 +153,23 @@ export const ReviewSessionView: React.FC<ReviewSessionViewProps> = ({
     prepareQueue();
   }, [prepareQueue]);
 
+  // Sync card updates (e.g. edited via modal) immediately into active session queue
+  useEffect(() => {
+    if (sessionState !== 'active') return;
+    setSessionQueue((prevQueue) =>
+      prevQueue.map((card) => {
+        const updated = cards.find((c) => c.id === card.id);
+        return updated ? { ...card, ...updated } : card;
+      })
+    );
+    setOriginalQueue((prevOriginal) =>
+      prevOriginal.map((card) => {
+        const updated = cards.find((c) => c.id === card.id);
+        return updated ? { ...card, ...updated } : card;
+      })
+    );
+  }, [cards, sessionState]);
+
   // Timer interval during active session
   useEffect(() => {
     let timer: NodeJS.Timeout;
@@ -284,6 +301,14 @@ export const ReviewSessionView: React.FC<ReviewSessionViewProps> = ({
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+
+      if (e.key === 'e' || e.key === 'E') {
+        if (currentCard) {
+          e.preventDefault();
+          onOpenEditCard(currentCard);
+          return;
+        }
+      }
 
       if (e.code === 'Space') {
         e.preventDefault();
@@ -648,16 +673,31 @@ export const ReviewSessionView: React.FC<ReviewSessionViewProps> = ({
           {/* Question Section */}
           <div className="space-y-4">
             <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-neutral-400">
-              <span>QUESTION</span>
-              {currentCard.tags.length > 0 && (
-                <div className="flex gap-1.5">
-                  {currentCard.tags.map((t) => (
-                    <span key={t} className="px-2 py-0.5 rounded-md bg-neutral-100 dark:bg-neutral-800 text-neutral-500">
-                      #{t}
-                    </span>
-                  ))}
-                </div>
-              )}
+              <div className="flex items-center gap-2">
+                <span>QUESTION</span>
+                {currentCard.tags.length > 0 && (
+                  <div className="flex gap-1.5">
+                    {currentCard.tags.map((t) => (
+                      <span key={t} className="px-2 py-0.5 rounded-md bg-neutral-100 dark:bg-neutral-800 text-neutral-500">
+                        #{t}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onOpenEditCard(currentCard);
+                }}
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold text-neutral-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                title="Modifier la question ou réponse (Raccourci : E)"
+              >
+                <Edit2 className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Modifier (E)</span>
+              </button>
             </div>
 
             <div className="text-xl sm:text-2xl font-bold text-neutral-900 dark:text-white leading-relaxed">
@@ -672,7 +712,7 @@ export const ReviewSessionView: React.FC<ReviewSessionViewProps> = ({
                 RÉPONSE
               </div>
 
-              <div className="text-base sm:text-lg font-medium text-neutral-800 dark:text-neutral-200 leading-relaxed bg-neutral-50 dark:bg-neutral-800/40 p-5 rounded-2xl border border-neutral-100 dark:border-neutral-800">
+              <div className="text-base sm:text-lg font-medium text-neutral-800 dark:text-neutral-200 leading-relaxed bg-neutral-50 dark:bg-neutral-800/40 p-5 rounded-2xl border border-neutral-100 dark:border-neutral-800 whitespace-pre-line">
                 {currentCard.answer}
               </div>
             </div>

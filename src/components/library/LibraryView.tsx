@@ -242,7 +242,7 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
                       {card.question}
                     </div>
 
-                    <div className="text-xs text-neutral-600 dark:text-neutral-400 line-clamp-3 bg-neutral-50 dark:bg-neutral-800/40 p-3 rounded-xl border border-neutral-100 dark:border-neutral-800">
+                    <div className="text-xs text-neutral-600 dark:text-neutral-400 line-clamp-3 bg-neutral-50 dark:bg-neutral-800/40 p-3 rounded-xl border border-neutral-100 dark:border-neutral-800 whitespace-pre-line">
                       {card.answer}
                     </div>
                   </div>

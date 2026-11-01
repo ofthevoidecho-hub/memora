@@ -1,0 +1,142 @@
+[
+  {
+    "id": "gen1",
+    "question": "Q1 : Le Rôle du Génie.",
+    "answer": "Le Génie Contribue essentiellement à la Liberté d’action des forces amies en Appuyant en particulier les actions de combat décisives et en Réduisant les capacités de la manœuvre adverse.  S’engageant toujours dans un cadre interarmes, les unités de combat du Génie sont aptes à prendre part au combat de mêlée.                         CLARS"
+  },
+  {
+    "id": "gen2",
+    "question": "Q2 : Organisation du Génie.",
+    "answer": "L’Arme du Génie est organisée comme suit :\n- Inspection du Génie ;\n- Bureau Génie ;\n- Bataillons du Génie ;\n- Unité de Sauvetage et Secours ;\n- Etablissements de Soutien du Génie ;\n- Etablissement Central des Matériels Génie ;\n- Centre d’Instruction du Génie ;\n- Centre de Formation et de Qualification Professionnelles."
+  },
+  {
+    "id": "gen3",
+    "question": "Q3 : Organigramme Inspection du Génie.",
+    "answer": "• Inspecteur\n• Inspecteur Adjoint\n• Bureau Génie EM/ZS\n• D.Gestion Courier Et Documents\n• D.Mise En Condition Et Préparation Opérationnelles\n• D.Domaine\n• D.Planification\n• D.Rh\n• D.Appui Génie\n• D.Matériel Et Equipement\n• D.Etude Architecture Et Ingénieurie\n• D.Instruction\n• D.Informatique\n• D.Opérations de secours et défense NRBC\n• D.Infrastructure"
+  },
+  {
+    "id": "gen4",
+    "question": "Q4 : Missions de l’Inspection Génie.",
+    "answer": "L’Inspection du Génie des FAR a pour missions de :                                                                  C-3PERT-FAGO\n- Conseiller le Commandement sur l’emploi de l’Arme ;\n- Planifier l’exécution des Décisions prises par le Haut Commandement ;\n- Maintenir le Potentiel des unités Génie dans un niveau optimal ;\n- Gérer le Patrimoine foncier militaire ;\n- Etudier les besoins humains et matériels des Unités de l’Arme ;\n- Réaliser les équipements spécifiques ;\n- Concevoir et gérer les Travaux d’infrastructures ;\n- Assurer la Formation Arme, technique et professionnelle au profit des FAR et Armées étrangères ;\n- Assister l’ALEM dans son plan d’action ;\n- Participer à la Gestion des sinistres ;\n- Conduire les Opérations de lutte contre les catastrophes."
+  },
+  {
+    "id": "gen5",
+    "question": "Q5 : Définition et Missions du Bureau du Génie.",
+    "answer": "C’est l’Antenne de l’Insp Génie en ZS. Il gère et coordonne l’action Génie en ZS en concertation avec l’Inspection du Génie et veille à l’exécution des Décisions du Commandant de la ZS en matière de Génie.           C-3PERT\nComposé de cinq (05) Sections, il a pour missions de :\n- Conseiller le Commandant de la Zone Sud sur l’emploi de l’Arme ;\n- Planifier l’exécution des Décisions prises ;\n- Maintenir le Potentiel des unités Génie dans un niveau optimal ;\n- Gérer le Patrimoine foncier militaire en Zone Sud.\n- Etudier les besoins humains et matériels des unités du Génie ;\n- Réaliser les équipements spécifiques ;\n- Participer à la conception et la gestion des Travaux d’infrastructures en Zone Sud."
+  },
+  {
+    "id": "gen6",
+    "question": "Q6 : Quelle est l’organisation du Bataillon du Génie.",
+    "answer": "Le Bataillon du Génie est l’unité d’appui Génie au profit du Chef IA. Il se compose de :\n- (01) Compagnie de Commandement et Services (CCS) ;\n- (01) Compagnie de Franchissement et Travaux (CFT) ;\n- (03) Compagnies de Combat (CC)."
+  },
+  {
+    "id": "gen7",
+    "question": "Q7 : Missions du Bataillon du Génie.",
+    "answer": "• Missions d’appui direct :                                                                                             APAPP-ASA-RC-FDOS\n- Appui à la mobilité ;\n- Participation à la contre mobilité ;\n- Appui au déploiement d’urgence ;\n- Participation au combat de contact ;\n- Participation à la sauvegarde / protection.\n\n• Missions d'appui général :\n- Aide au déploiement de la force ;\n- Soutien au stationnement de la force ;\n- Appui aux déplacements de la force.\n• Missions de recherche de renseignement : (terrain, milieu) :\n- Reconnaissances planifiées ;\n- Comptes rendus spontanés.\n• Missions de franchissement :\n- Franchissement Défensif ;\n- Franchissement Offensif ;\n- Franchissement Sous contraintes."
+  },
+  {
+    "id": "gen8",
+    "question": "Q8 : Attributions du Bataillon du Génie.",
+    "answer": "- Conseiller le Commandant du Secteur sur l’emploi des moyens du Génie ;                                           CASSAF\n- Appui direct des unités de mêlée de l’avant ;\n- Satisfaire les besoins des Unités de Secteur ;\n- Suivre le combat rapide des Unités engagées ;\n- Appui aux opérations de Franchissement."
+  },
+  {
+    "id": "gen9",
+    "question": "Q9 : Quel est le Rôle et l’Organisation de l’Unité de Secours et de Sauvetage (USS).",
+    "answer": "Secourir et Assister la Population sinistrée. Elle peut agir d’une manière Autonome ou Intégrée, comme elle peut participer aux opérations de Dépollution.\n\nElle se compose de (06) compagnies :  (NSN-CLD)\n- Commandant\n- Officier adjoint\n- C. Commandement et services\n- C. Lutte contre les incendies\n- C. Déblaiement\n- C. Sauvetage inondations\n- C. NRBC\n- C. Neutralisation et destruction d’engins explosifs (NEDEX)"
+  },
+  {
+    "id": "gen10",
+    "question": "Q10 : Missions de l’USS.",
+    "answer": "- Secourir la population sinistrée en cas de :                                                                                                  SDF\n- Catastrophes naturelles (inondations, feux de forêts ou séismes) ;\n- Incidents technologiques (feux industriels et risques nucléaires, radiologiques, biologiques ou chimiques).\n- Dépolluer les zones affectées d’engins explosifs universels ou improvisés ;\n- Former des cadres et des militaires des Unités des FAR dans le domaine des secours et de la neutralisation des engins explosifs et des mines."
+  },
+  {
+    "id": "gen11",
+    "question": "Q11 : Missions et Organisation de l’Etablissement de Soutien du Génie (ESG).",
+    "answer": "L’ESG est constitué de militaires spécialistes du bâtiment et chargé des travaux de construction, d’entretien et de gestion de l’infrastructure et du domaine militaire. Il est géré administrativement par le BG de rattachement. Il est organisé comme suit :                                                                                                                          CÉDÉ\n- Chef ESG\n- Officier adjoint\n- S.Commendement\n- S.Domaine et infrastructure\n- S.Equipement\n- S.Etudes techniques et conduite des TVX"
+  },
+  {
+    "id": "gen12",
+    "question": "Q12 : Missions et Organisation de l’Etablissement Central des Matériels du Génie (ECMG).",
+    "answer": "Administrativement autonome, l’ECMG est un organe de Gestion et de Soutien des Unités des FAR en matériels Génie. Il est chargé de :                                                                                                                       GPS-CARR\n- Gérer et soutenir les unités des FAR en matériel Génie (stockage, attribution, réparation…) ;\n- Prévoir les besoins des unités des FAR en matériel Génie ;\n- Organiser des Stages au profit des unités des FAR sur les engins et équipements Génie en dotation.\n\n- Commandant ECMG\n- Officier adjoint\n- S.Commandement et services\n- S.Appro et stockage\n- S.Réparation engins\n- S.Réparation équipements génie"
+  },
+  {
+    "id": "gen13",
+    "question": "Q13 : Missions et Organisation du Centre d'Instruction du Génie.",
+    "answer": "Le CIG, Unité formant corps et administrativement autonome, assure la formation du personnel :                 SMIC\n- De l’Arme du Génie ;\n- Des autres Unités des FAR et des FA ;\n- Des Armées étrangères amies.\nIl est organisé en :\n- Groupement Stagiaires.\n- Groupement des Moyens d’Instruction ;\n- Groupement de Commandement et Services."
+  },
+  {
+    "id": "gen14",
+    "question": "Q14 : Missions et Organisation du Centre de Formation et de Qualification Professionnelles (CFQP).",
+    "answer": "Le CFQP est une Unité formant corps et administrativement autonome. Il est organisé en : (SMIC)\n- Groupement Stagiaires ;\n- Groupement des Moyens d’Instruction ;\n- Groupement de Commandement et Services.\n\nIl assure la formation professionnelle des ODR et la qualification des MDR de l’Arme du Génie et ceux des autres Armes et Services des FAR."
+  },
+  {
+    "id": "gen15",
+    "question": "Q15 : Les Types de missions de l’Arme du Génie.",
+    "answer": "• Missions d’Appui direct : (APAPP)\n- Appui à la mobilité ;\n- Participation à la contre mobilité ;\n- Appui au déploiement d’urgence ;\n- Participation au combat de contact ;\n- Participation à la sauvegarde et protection.\n\n• Missions d’Appui général : (ASRAP)\n- Aide au déploiement de la force ;\n- Soutien au stationnement de la force ;\n- Missions de Recherche de renseignement ;\n- Appui au déplacement de la force ;\n- Participation aux opérations civilo-militaires.\n\n• Missions d’appui aux Franchissements : dans les opérations offensives et défensives."
+  },
+  {
+    "id": "gen16",
+    "question": "Q16 : Les missions d’Appui Direct du Génie.",
+    "answer": "• Appui à la Mobilité : (ROPOD)\n- Rétablir les itinéraires ;\n- Ouvrir les axes de progression ;\n- Participer à une opération d’Ouverture de brèche ;\n- Désengluer une unité.\n\n• Participation à la Contre mobilité : (RPDD)\n- Réaliser un système d’obstacles planifié ;\n- Participer à un Détachement de barrage ;\n- Participer à un Détachement héliporté d’intervention du Génie.\n\n• Appui au Déploiement d’Urgence : (DRPT)\n- Déminer et dépolluer une zone ;\n- Réaliser des Plates-formes de déploiement d’urgence ;\n- Réaliser des Travaux simples d’infrastructure horizontale et Renforcer sommairement les infrastructures verticales.\n\n• Participation au Combat de contact :\n- Participer à l’Attaque d’un point fort ou la Saisie d’un ouvrage.\n\n• Participation à la Sauvegarde et Protection :\n- Réaliser un emplacement de tir et de protection."
+  },
+  {
+    "id": "gen17",
+    "question": "Q17 : Les missions d’Appui Général du Génie.",
+    "answer": "• Aide au Déploiement de la force :\nVise à assurer l’acheminement et l’installation initiale de la force, de prendre les dispositifs adaptés en vue de préserver sa capacité opérationnelle et d’assurer son désengagement et son rapatriement dans les meilleures conditions. Ainsi, le Génie peut être chargé de :                                                                                       T-RADAR\n- Travaux simples d’infrastructure ;\n- Reconnaissance préalable à l’installation ;\n- Approvisionnement en eau et en électricité ;\n- Dépollution pour la préparation d’une plate-forme ;\n- Aménagement des conditions de vie des forces, éventuellement des populations ;\n- Rétablissement des voies de communication.\n• Soutien au Stationnement de la force :\nMener des travaux d’amélioration du bien-être et de sécurité des unités. Notamment par :                        DMR\n- Dépollution et création d’ouvrages de protection et de Contrôle.\n- Mise en place de centrales électriques, de stations de production d'eau ou d'épuration ;\n- Réfection ou construction de bâtiments.\n• Recherche de renseignement :\nParticiper aux reconnaissances planifiées et aux Comptes Rendus liés au terrain et au milieu et à toute autre information susceptible d’aider la manœuvre.\n• Appui aux Déplacements de la force :\nVise à garantir la liberté de mouvement des forces amies et la permanence de leurs flux logistiques.\nPeut consister à participer au rétablissement et au maintien des voies de communications, en réalisant des opérations préalables de déminage et de dépollution ou en permettant le franchissement de coupures.\n• Participation aux Opérations civilo-militaires :\nFaciliter l’interaction avec l’environnement civil et atteindre ainsi les objectifs civils et militaires poursuivis."
+  },
+  {
+    "id": "gen18",
+    "question": "Q18 : Distinction entre « Appui au déploiement d’urgence » et « Aide au déploiement de la force ».",
+    "answer": "TABLEAU COMPARATIF :\n\n• Appui au déploiement d’urgence :\n- Cadre : Appui Direct\n- Situation tactique : Zone d’insécurité\n- Délais : Réduits\n- Moyens : Du B.Génie (CCG et CFT)\n\n• Aide au déploiement de la force :\n- Cadre : Appui Général\n- Situation tactique : Zone sécurisée\n- Délais : Importants\n- Moyens : Du Génie spécialiste en infrastructures ESG"
+  },
+  {
+    "id": "gen19",
+    "question": "Q19 : Les missions d’Appui au Franchissement.",
+    "answer": "L’appui aux franchissements a pour but de faire passer les unités d’une rive à l’autre d’une coupure lorsque les ponts d’infrastructure sont totalement ou partiellement inutilisables ou inexistants. Cette mission peut être exécutée durant des opérations offensives ou défensives.\n• Selon le Contexte de l’opération : On distingue :\n- Franchissement Sous menace est une opération offensive ou défensive organisée dans une situation tactique où un ENI clairement identifié cherchera à s’opposer à la manœuvre. L’une des deux rives est déclarée « rive amie » et l’autre « rive ennemie ».\n- Franchissement Sous contrainte est une opération organisée dans une situation où il n’y a pas d’ennemi en mesure de s’opposer directement à la manœuvre de franchissement. Dans ce cas, aucune des deux rives n’est déclarée «ennemie» ou «amie» et chacune nécessite un dispositif de sûreté adapté.\n• Selon les Moyens utilisés : Techniquement, on distingue :\n- Franchissement Autonome qui consiste, pour une unité donnée, à passer d’une rive à l’autre par ses propres moyens, éventuellement renforcée par des moyens du génie. Ils incluent le franchissement par flotteurs ou bateaux isolés, amphibie & à gué.\n- Franchissement par Moyens du Génie où l’on distingue :\n- Le FRCH continu qui consiste à utiliser des ponts du génie (travures continues avec ou sans support intermédiaires + ponts amphibies, motorisés ou de circonstance).\n- Le FRCH discontinu consiste à utiliser supports flottants motorisés de type bacs ou portières (ambidromes)."
+  },
+  {
+    "id": "gen20",
+    "question": "Q20 : Le Cadre d’emploi de la Compagnie de Combat du Génie (CCG).",
+    "answer": "La CCG est souvent mise en œuvre dans le cadre de l’engagement de la GU. Elle peut exécuter ses missions sur le territoire national ou sur un théâtre extérieur dans le cadre d’une opération nationale ou multinationale.\nLa CCG exécute ou participe à des missions du génie ayant principalement pour cadre l’appui direct au combat ou parfois relevant de l’appui général."
+  },
+  {
+    "id": "gen21",
+    "question": "Q21 : Les Aspects de la manœuvre Génie.",
+    "answer": "Il n’existe pas de manœuvre Génie mais une composante « Génie » de la manœuvre interarmes qui comporte deux aspects complémentaires :\n- Emploi dont les décisions sont du ressort du chef IA. Il se traduit par la rédaction de l’Annexe Génie de l’ORDOPE de la GU. (Ordre Au Génie).\n- Mise en œuvre qui résulte des décisions d’emploi, du ressort du Cdt Génie de chaque échelon. Elle est indiquée dans l’Ordre Du Génie du BG."
+  },
+  {
+    "id": "gen22",
+    "question": "Q22 : Les Règles d’emploi de la CCG.",
+    "answer": "La CCG est le plus petit élément d’emploi du Génie. Elle est généralement engagée au profit d’une GU Interarmes, dans un cadre espace/temps prédéfini par le Commandant de la Brigade.\nLa Section de Combat du Génie (SCG) est le plus petit élément de mise en œuvre. Elle est généralement indissociable, sauf en cas particuliers d’un engagement en zones urbaines."
+  },
+  {
+    "id": "gen23",
+    "question": "Q23 : Les Principes d’emploi du Génie.",
+    "answer": "• Coordination par des actions coordonnées avec celles des autres armes (Feu et mouvement). Il convient pour cela de : CAI\n- Définir avec précision l’effort Génie ;\n- Déterminer les moyens du Génie ;\n- Coordonner les actions du Génie, dans le temps et l’espace.\n• Anticipation dans la préparation comme dans l’exécution de ses missions, elle doit disposer du temps suffisant pour :\n- Effectuer les reconnaissances ;\n- Articuler et mettre en place ses moyens ;\n- Exécuter les missions définies par l’autorité interarmes.\n• Intégration exige la participation du Génie dans les différents échs et durant toutes les phases de la manœuvre."
+  },
+  {
+    "id": "gen24",
+    "question": "Q24 : Quels sont les Principes qui régissent l’emploi du Génie.",
+    "answer": "• Unité d’action : Elle est indispensable pour plusieurs raisons :                                                                          UP\n- L’action du Génie qui marque le terrain d’une façon durable, aura des répercussions sur la manœuvre future des autres unités à tous les échelons.\n- Les dispositifs ne sont pas immuables et les zones de responsabilités se déplacent. Ainsi, le Génie d’un échelon peut être amené à remplacer celui d’un échelon supérieur ou subordonné et compléter son action.\n• Progressivité : Cette notion recouvre l’emploi successif des unités du Génie et des moyens de puissance croissante pour la réalisation échelonnée d’une tâche déterminée."
+  },
+  {
+    "id": "gen25",
+    "question": "Q25 : Les modalités de Subordination de la CCG.",
+    "answer": "Selon les cas, la CCG peut être :                                                                                                                       CDD\n- Conservée aux ordres du Bataillon du Génie ;\n- Donnée en renforcement à un Autre Bataillon du Génie ;\n- Détachée ou intégrée auprès d’une Unité Interarmes.\nLes modalités de subordination sont précisées dans l’Annexe Génie de l’ORDOPE/GU et l’Ordre Génie du BG."
+  },
+  {
+    "id": "gen26",
+    "question": "Q26 : Les Limites du Génie",
+    "answer": "- Délais généralement réduits ;\n- Moyens toujours limités ;\n- Besoins logistiques accrus par la motorisation de ses unités et la spécificité de ses matériels.\nEn plus du besoin d’une Sûreté rapprochée fournie par les unités bénéficiaires."
+  },
+  {
+    "id": "gen27",
+    "question": "Q27 : Les Moyens en personnel du Génie.",
+    "answer": "En vue de faire face aux exigences des différentes missions, l’Arme du Génie dispose d’un personnel qualifié dans les différentes spécialités notamment dans le domaine du Combat, de Sauvetage et des Techniques d’infrastructure."
+  },
+  {
+    "id": "gen28",
+    "question": "Q28 : Les Moyens matériels du Génie et leur But.",
+    "answer": "- Matériels spéciaux : Conçus pour les travaux d'aménagement du terrain, de maintien des communications et de protection du personnel et matériel contre les armes non conventionnelles. Ils regroupent les engins de chantier, le matériel de franchissement et les équipements de défense NRBC.\n- Mines\t: on distingue deux grandes familles, à savoir, les mines anti-personnel et les mines anti-char ;\n- Explosifs\t: ils sont classés suivant l’emploi, le mode d’action ou leur effet mécanique.\n- Matériaux\t: à l'exception de quelques matériaux de défense et de protection, ceux-ci n'ont aucun caractère spécifiquement militaire.\nBut des moyens du Génie : Economiser les moyens et Réduire les délais."
+  }
+]

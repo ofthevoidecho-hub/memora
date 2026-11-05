@@ -58,6 +58,7 @@ export interface UserSettings {
   telegramBotToken?: string;
   telegramChatId?: string;
   telegramNotificationsEnabled?: boolean;
+  autoBackupOnReviewComplete?: boolean;
 }
 
 export interface UserStats {

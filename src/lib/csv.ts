@@ -151,27 +151,33 @@ export function exportCardsToCSV(cards: Card[], decks: Deck[], targetDeckId?: st
 }
 
 import { ReviewLog, UserSettings, UserStats } from '../types';
-import { saveCards, saveDecks, saveReviewLogs, saveSettings, saveStats } from './storage';
+import { loadCards, loadDecks, loadReviewLogs, loadStats, loadSettings, saveCards, saveDecks, saveReviewLogs, saveSettings, saveStats } from './storage';
 
 /**
  * Export full backup to JSON file including all app data
  */
 export function exportToJSON(
-  cards: Card[],
-  decks: Deck[],
+  cards?: Card[],
+  decks?: Deck[],
   logs?: ReviewLog[],
   stats?: UserStats,
   settings?: UserSettings
-) {
+): string {
+  const effectiveCards = cards && cards.length > 0 ? cards : loadCards();
+  const effectiveDecks = decks && decks.length > 0 ? decks : loadDecks();
+  const effectiveLogs = logs && logs.length > 0 ? logs : loadReviewLogs();
+  const effectiveStats = stats || loadStats();
+  const effectiveSettings = settings || loadSettings();
+
   const data = {
     app: 'MEMORA',
     version: '1.0',
     exportedAt: new Date().toISOString(),
-    decks,
-    cards,
-    logs: logs || [],
-    stats: stats || null,
-    settings: settings || null,
+    decks: effectiveDecks,
+    cards: effectiveCards,
+    logs: effectiveLogs,
+    stats: effectiveStats,
+    settings: effectiveSettings,
   };
 
   const jsonStr = JSON.stringify(data, null, 2);
@@ -179,11 +185,16 @@ export function exportToJSON(
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `memora_backup_${new Date().toISOString().split('T')[0]}.json`;
+  const now = new Date();
+  const dateStr = now.toISOString().split('T')[0];
+  const timeStr = `${String(now.getHours()).padStart(2, '0')}h${String(now.getMinutes()).padStart(2, '0')}`;
+  const filename = `memora_sauvegarde_${dateStr}_${timeStr}.json`;
+  a.download = filename;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
+  return filename;
 }
 
 /**

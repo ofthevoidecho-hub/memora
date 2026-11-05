@@ -17,9 +17,11 @@ import {
   Shuffle,
   Layers,
   BookOpen,
+  Download,
 } from 'lucide-react';
 import { ActiveTab, Card, CardRating, Deck, UserSettings } from '../../types';
 import { getFormattedNextInterval, isCardDue, isCardDifficult } from '../../lib/spacedRepetition';
+import { exportToJSON } from '../../lib/csv';
 
 interface ReviewSessionViewProps {
   cards: Card[];
@@ -56,8 +58,10 @@ export const ReviewSessionView: React.FC<ReviewSessionViewProps> = ({
   const [sessionStartTime, setSessionStartTime] = useState<number | null>(null);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [ratingCounts, setRatingCounts] = useState({ 1: 0, 2: 0, 3: 0, 4: 0 });
+  const [downloadedBackupFile, setDownloadedBackupFile] = useState<string | null>(null);
 
   const cardStartTimeRef = useRef<number>(Date.now());
+  const hasAutoBackedUpRef = useRef<boolean>(false);
 
   const isDifficultSession = targetDeckId === 'difficult' || targetDeckId?.startsWith('difficult:');
   const actualDeckId = targetDeckId?.startsWith('difficult:') ? targetDeckId.replace('difficult:', '') : targetDeckId;
@@ -283,6 +287,22 @@ export const ReviewSessionView: React.FC<ReviewSessionViewProps> = ({
       localStorage.removeItem(`memora_saved_card_id_${targetDeckId || 'all'}`);
       setSessionState('completed');
       onLeaveReviewSession?.();
+
+      // Téléchargement automatique du fichier de sauvegarde JSON (.json) à la fin de la session
+      if (!hasAutoBackedUpRef.current) {
+        hasAutoBackedUpRef.current = true;
+        if (settings.autoBackupOnReviewComplete !== false) {
+          try {
+            setTimeout(() => {
+              const fname = exportToJSON();
+              setDownloadedBackupFile(fname);
+            }, 300);
+          } catch (err) {
+            console.warn('[Auto Backup] Erreur lors de l\'export de sauvegarde:', err);
+          }
+        }
+      }
+
       try {
         confetti({
           particleCount: 100,
@@ -556,6 +576,38 @@ export const ReviewSessionView: React.FC<ReviewSessionViewProps> = ({
             <div className="flex items-center gap-1.5 text-amber-600 font-bold">
               <Flame className="w-4 h-4 fill-amber-500" />
               <span>+1 jour de série</span>
+            </div>
+          </div>
+
+          {/* Local Backup Notification Card */}
+          <div className="p-4 rounded-2xl bg-emerald-50/80 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/60 text-left space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-emerald-800 dark:text-emerald-300 font-bold text-xs">
+                <Download className="w-4 h-4 text-emerald-600" />
+                <span>
+                  {downloadedBackupFile ? 'Sauvegarde locale téléchargée' : 'Sauvegarde locale prête'}
+                </span>
+              </div>
+              <span className="text-[10px] bg-emerald-600/10 text-emerald-700 dark:text-emerald-400 font-bold px-2.5 py-0.5 rounded-full border border-emerald-600/20">
+                Fichier .JSON
+              </span>
+            </div>
+            <p className="text-[11px] text-emerald-700 dark:text-emerald-400 leading-relaxed">
+              {downloadedBackupFile
+                ? `Vos données ont été téléchargées dans votre dossier Téléchargements sous le nom "${downloadedBackupFile}". Vos cartes et révisions sont également sécurisées dans le stockage local du navigateur.`
+                : 'Toutes vos cartes et révisions sont conservées dans le stockage local de votre machine même après fermeture du navigateur.'}
+            </p>
+            <div className="pt-1">
+              <button
+                onClick={() => {
+                  const fname = exportToJSON();
+                  setDownloadedBackupFile(fname);
+                }}
+                className="text-xs text-emerald-800 dark:text-emerald-300 font-bold hover:underline flex items-center gap-1.5"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>Télécharger {downloadedBackupFile ? 'à nouveau' : 'une copie'} (.json)</span>
+              </button>
             </div>
           </div>
 

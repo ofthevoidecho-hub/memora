@@ -445,6 +445,7 @@ export const INITIAL_SETTINGS: UserSettings = {
   telegramBotToken: '',
   telegramChatId: '',
   telegramNotificationsEnabled: false,
+  autoBackupOnReviewComplete: true,
 };
 
 export const INITIAL_STATS: UserStats = {

@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, Moon, Sun, Monitor, RefreshCw, Trash2, Key, Sliders, Shield, Bell, BellOff, Clock, Send, Info, RotateCcw } from 'lucide-react';
+import { Settings, Moon, Sun, Monitor, RefreshCw, Trash2, Key, Sliders, Shield, Bell, BellOff, Clock, Send, Info, RotateCcw, Download, CheckCircle2 } from 'lucide-react';
 import { UserSettings } from '../../types';
 import { resetAllData, resetReviewStats } from '../../lib/storage';
 import { requestNotificationPermission, getNotificationPermission, sendTestNotification, sendTelegramNotification } from '../../lib/notifications';
+import { exportToJSON } from '../../lib/csv';
 
 interface SettingsViewProps {
   settings: UserSettings;
@@ -17,6 +18,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, onUpdateSe
   const [telegramTestError, setTelegramTestError] = useState<string | null>(null);
   const [isResetStatsModalOpen, setIsResetStatsModalOpen] = useState(false);
   const [statsResetSuccess, setStatsResetSuccess] = useState(false);
+  const [backupDownloadedMessage, setBackupDownloadedMessage] = useState<string | null>(null);
 
   useEffect(() => {
     setPermissionState(getNotificationPermission());
@@ -446,6 +448,80 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, onUpdateSe
               ✓ Compteur réinitialisé avec succès !
             </span>
           )}
+        </div>
+      </div>
+
+      {/* Local File Backup Section */}
+      <div className="p-6 rounded-3xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-xs space-y-5">
+        <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
+          <div className="flex items-center gap-2">
+            <Download className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+            <h3 className="font-bold text-neutral-900 dark:text-white text-base">
+              Sauvegarde Locale & Fichier de Secours
+            </h3>
+          </div>
+          <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400">
+            Fichier .JSON
+          </span>
+        </div>
+
+        <div className="p-4 rounded-2xl bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200/60 dark:border-emerald-800/40 text-xs text-emerald-800 dark:text-emerald-300 space-y-1">
+          <p className="font-bold flex items-center gap-1.5">
+            <Shield className="w-4 h-4 text-emerald-600" />
+            <span>Vos données sont protégées sur votre ordinateur</span>
+          </p>
+          <p className="text-[11px] text-emerald-700 dark:text-emerald-400 leading-relaxed">
+            Toutes vos cartes, decks et l'historique de révision sont automatiquement conservés dans le stockage local de votre navigateur (LocalStorage et IndexedDB). Même si vous fermez le navigateur ou redémarrez l'ordinateur, vos progrès restent enregistrés.
+          </p>
+        </div>
+
+        <div className="space-y-4">
+          <div className="flex items-center justify-between p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-200 dark:border-neutral-800">
+            <div className="space-y-0.5 pr-4">
+              <span className="text-xs font-bold text-neutral-900 dark:text-white block">
+                Téléchargement automatique après chaque session
+              </span>
+              <span className="text-[11px] text-neutral-500 dark:text-neutral-400 block">
+                Télécharge automatiquement un fichier de sauvegarde JSON horodaté à chaque fois que vous terminez une session de révision.
+              </span>
+            </div>
+            <button
+              onClick={() => onUpdateSettings({ autoBackupOnReviewComplete: !(settings.autoBackupOnReviewComplete ?? true) })}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors flex-shrink-0 ${
+                (settings.autoBackupOnReviewComplete ?? true) ? 'bg-emerald-600' : 'bg-neutral-300 dark:bg-neutral-700'
+              }`}
+            >
+              <span
+                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                  (settings.autoBackupOnReviewComplete ?? true) ? 'translate-x-6' : 'translate-x-1'
+                }`}
+              />
+            </button>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between pt-2">
+            <div className="text-[11px] text-neutral-500">
+              {backupDownloadedMessage ? (
+                <span className="text-emerald-600 font-bold flex items-center gap-1 animate-in fade-in">
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  <span>{backupDownloadedMessage}</span>
+                </span>
+              ) : (
+                <span>Besoin d'un fichier de sauvegarde physique maintenant ?</span>
+              )}
+            </div>
+            <button
+              onClick={() => {
+                const fname = exportToJSON();
+                setBackupDownloadedMessage(`Sauvegardé sous ${fname}`);
+                setTimeout(() => setBackupDownloadedMessage(null), 5000);
+              }}
+              className="py-2.5 px-5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md shadow-emerald-600/20 flex items-center justify-center gap-2 transition-all w-full sm:w-auto cursor-pointer"
+            >
+              <Download className="w-4 h-4" />
+              <span>Télécharger une sauvegarde complète (.json)</span>
+            </button>
+          </div>
         </div>
       </div>
 

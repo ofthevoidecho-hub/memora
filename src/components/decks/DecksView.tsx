@@ -20,6 +20,9 @@ function getArmeEmoji(title = '') {
   if (t.includes('blindée') || t.includes('blindee')) return '🛡️';
   if (t.includes('air') || t.includes('aérienne') || t.includes('aerienne')) return '✈️';
   if (t.includes('gendarmerie')) return '👮';
+  if (t.includes('génie') || t.includes('genie')) return '🛠️';
+  if (t.includes('artillerie')) return '🎯';
+  if (t.includes('transport') || t.includes('logistique') || t.includes('trans')) return '🚚';
   if (t.includes('infanterie') || t.includes('arme')) return '⚔️';
   return '📚';
 }

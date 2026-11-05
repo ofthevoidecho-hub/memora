@@ -1,0 +1,603 @@
+[
+  {
+    "id": "atl1",
+    "num": 1,
+    "question": "Q1 : Donner un bref Aperçu historique de l’Arme.",
+    "answer": "- Depuis 1956, l’ATL a connu la création de plusieurs Unités, CIT,1-2-3-4-5°GT, GST et 14 Cnies de Soutien Local (CSL) en procédant à des restructurations notamment en 2011 et 2016.\n- En 2023, l’Arme a été restructurée : Changement de dénomination pour devenir « Arme du Transport et de la Logistique », création de « Ecole Royale du Transport et de la Logistique » et le 2°GELT ainsi que des BSS et BSL en regroupant plusieurs CSL.",
+    "tags": [
+      "ATL",
+      "Transport et Logistique",
+      "Organisation",
+      "Historique"
+    ]
+  },
+  {
+    "id": "atl2",
+    "num": 2,
+    "question": "Q2 : Donner l’Organisation de l’Arme.",
+    "answer": "- Inspection de l’Arme ;\n- Unités de Transport ;\n- Unités de Formation ;\n- Unités de Soutien aux Etats-Majors.",
+    "tags": [
+      "ATL",
+      "Transport et Logistique",
+      "Organisation",
+      "Historique"
+    ]
+  },
+  {
+    "id": "atl3",
+    "num": 3,
+    "question": "Q3 : Quelle est la Structure de l’Inspection de l'ATL.",
+    "answer": "Structure de l’Inspection de l'ATL : (LGISTIC-MR)\n\n- Div Liaisons Etudes et Planification ;\n- Div Gestion Courrier et Documents ;\n- Div Informatique ;\n- Div Soutien Adapté ;\n- Div Technique ;\n- Div Instruction ;\n- Div Conduite, Prévention et Sécurité Routières ;\n- Div MCPO ;\n- Div Ressources Humaines.",
+    "tags": [
+      "ATL",
+      "Transport et Logistique",
+      "Organisation",
+      "Historique"
+    ]
+  },
+  {
+    "id": "atl4",
+    "num": 4,
+    "question": "Q4 : Quelles sont les Attributions de l’Inspection de l'ATL.",
+    "answer": "Attributions de l’Inspection de l'ATL : (3M-BAFE)\n\n- Mettre l'Arme en condition ;\n- Maintenir les unités de l'Arme à leur niveau opérationnel optimum ;\n- Mettre les équipements en place ;\n- Planifier les Besoins en Hommes et en Matériels ;\n- Application de la Décision d'emploi de l'Arme ;\n- Fonctionnement de l'Arme ;\n- Planifier l'Exécution des Décisions relatives à l'Arme.",
+    "tags": [
+      "ATL",
+      "Transport et Logistique",
+      "Organisation",
+      "Historique"
+    ]
+  },
+  {
+    "id": "atl5",
+    "num": 5,
+    "question": "Q5 : Quelles sont les Unités de Transport de l’ATL.",
+    "answer": "- Nord du Royaume : un GST, des GT et des GELT ;\n- Zone Sud : des GT.",
+    "tags": [
+      "ATL",
+      "Transport et Logistique",
+      "Organisation",
+      "Historique"
+    ]
+  },
+  {
+    "id": "atl6",
+    "num": 6,
+    "question": "Q6 : Quelles sont les Unités de Formation de l’ATL.",
+    "answer": "- Ecole Royale du Transport et de Logistique (ERTL) ;\n- Centre de Formation des Conducteurs (CFC).",
+    "tags": [
+      "ATL",
+      "Transport et Logistique",
+      "Organisation",
+      "Historique"
+    ]
+  },
+  {
+    "id": "atl7",
+    "num": 7,
+    "question": "Q7 : Quelles sont les Unités de l’ATL chargées du Soutien aux Etats-Majors.",
+    "answer": "- Nord du Royaume : Un BQG, un BSTH, des BSL et des BSS ;\n- Zone Sud : Un BSTH et des BSS.",
+    "tags": [
+      "ATL",
+      "Transport et Logistique",
+      "Organisation",
+      "Historique"
+    ]
+  },
+  {
+    "id": "atl8",
+    "num": 8,
+    "question": "Q8 : Quel est le Cadre d’emploi des Unités de circulation routière.",
+    "answer": "L’action des unités de circulation est prépondérante dès l’entrée sur le théâtre. Elles contribuent à :\n- Accueil des forces ;\n- Intégration des forces projetées ;\n- Appui des mouvements opérationnels.\n\nL’emploi des unités de circulation est généralement Centralisé par le chef IA du niveau considéré. Toutefois, l’exécution peut être décentralisée aux niveaux subordonnés pour certaines phases.",
+    "tags": [
+      "ATL",
+      "Transport et Logistique",
+      "Circulation Routière",
+      "Missions"
+    ]
+  },
+  {
+    "id": "atl9",
+    "num": 9,
+    "question": "Q9 : Quel est le Rôle Général des Unités de circulation routière.",
+    "answer": "Appuyer l’ensemble des déplacements militaires effectués par voie routière.",
+    "tags": [
+      "ATL",
+      "Transport et Logistique",
+      "Circulation Routière",
+      "Missions"
+    ]
+  },
+  {
+    "id": "atl10",
+    "num": 10,
+    "question": "Q10 : Quelles sont les Missions des Unités de circulation routière.",
+    "answer": "Missions des Unités de circulation routière : (RAS)\n\n- Missions de Renseignement ;\n- Missions d’Appui aux mouvements ;\n- Participation aux missions de Sûreté.",
+    "tags": [
+      "ATL",
+      "Transport et Logistique",
+      "Circulation Routière",
+      "Missions"
+    ]
+  },
+  {
+    "id": "atl11",
+    "num": 11,
+    "question": "Q11 : En quoi consiste la mission de Renseignement des Unités de circulation routière.",
+    "answer": "Recueilli systématiquement ou sur ordre, le renseignement vise essentiellement à informer :\n- L’échelon supérieur, tant sur l’exécution des mouvements que sur la situation générale ;\n- Les usagers du réseau routier.",
+    "tags": [
+      "ATL",
+      "Transport et Logistique",
+      "Circulation Routière",
+      "Missions"
+    ]
+  },
+  {
+    "id": "atl12",
+    "num": 12,
+    "question": "Q12 : Sur quoi porte le Renseignement des Unités de circulation routière.",
+    "answer": "Le Renseignement des Unités de circulation routière porte sur : (DADAC)\n\n- Déroulement des mouvements ;\n- Attitude de la population ;\n- Déploiement des PC, des Unités et des Bases Logistiques ;\n- Activités des forces en présence (amies ou ennemies) ;\n- Conditions d’utilisation et d’équipement des itinéraires.",
+    "tags": [
+      "ATL",
+      "Transport et Logistique",
+      "Circulation Routière",
+      "Missions"
+    ]
+  },
+  {
+    "id": "atl13",
+    "num": 13,
+    "question": "Q13 : Quelles sont les Missions de Renseignement des Unités de circulation routière.",
+    "answer": "- Reconnaître un itinéraire ou une zone : Chercher, au profit du commandement et des autres unités, des renseignements d'ordre tactique ou technique.\n- Mettre en œuvre une Ligne de Contrôle : Recueillir, au profit du commandement, dans des conditions lieu et temps fixées, des renseignements sur le déroulement des déplacements.",
+    "tags": [
+      "ATL",
+      "Transport et Logistique",
+      "Circulation Routière",
+      "Missions"
+    ]
+  },
+  {
+    "id": "atl14",
+    "num": 14,
+    "question": "Q14 : En quoi consiste la mission d’Appui au mouvement des Unités de circulation routière.",
+    "answer": "En action d’ensemble, ou en appui direct, cette mission permet au chef IA de Marquer un effort au profit d’une phase de sa manœuvre ou d’une de ses formations subordonnées.",
+    "tags": [
+      "ATL",
+      "Transport et Logistique",
+      "Circulation Routière",
+      "Missions"
+    ]
+  },
+  {
+    "id": "atl15",
+    "num": 15,
+    "question": "Q15 : Quels sont les missions qui peuvent être accomplies dans le cadre d’Appui au mouvement.",
+    "answer": "Missions dans le cadre d’Appui au mouvement : (FRRAN)\n\n- Appuyer un Franchissement de coupure ou d’obstacle ;\n- Régulation des mouvements et transports ;\n- Participer à une Relève ;\n- Appuyer les mouvements d’une unité ;\n- Intervenir suite à un incident NRBC.",
+    "tags": [
+      "ATL",
+      "Transport et Logistique",
+      "Circulation Routière",
+      "Missions"
+    ]
+  },
+  {
+    "id": "atl16",
+    "num": 16,
+    "question": "Q16 : Définir la Régulation des mouvements et transport.",
+    "answer": "Ensemble des actes de Commandement destinés à adapter les déplacements en cours de déroulement aux nécessités de la manœuvre et à l'évolution de la situation.",
+    "tags": [
+      "ATL",
+      "Transport et Logistique",
+      "Circulation Routière",
+      "Missions"
+    ]
+  },
+  {
+    "id": "atl17",
+    "num": 17,
+    "question": "Q17 : Quelles sont les missions de Sûreté auxquelles Participent les Unités de circulation routière.",
+    "answer": "Missions de Sûreté auxquelles participent les Unités de circulation routière : (CESS)\n\n- Contrôle d’une zone ;\n- Escorte d’un convoi ;\n- Mission de Surveillance ;\n- Sécurisation d’un axe logistique.",
+    "tags": [
+      "ATL",
+      "Transport et Logistique",
+      "Circulation Routière",
+      "Missions"
+    ]
+  },
+  {
+    "id": "atl18",
+    "num": 18,
+    "question": "Q18 : Quel est le Cadre d’emploi des Formations d’Appui à la mobilité.",
+    "answer": "Agissant dans un cadre interarmes, les moyens d’appui à la mobilité sont employés :\n- Généralement centralisés pour les acheminements de grandes envergures ou interzones ;\n- Exceptionnellement décentralisés (intégrés ou adaptés) au niveau tactique, pour des raisons inhérentes au MEC.",
+    "tags": [
+      "ATL",
+      "Transport et Logistique",
+      "Transport",
+      "Logistique",
+      "PLGD"
+    ]
+  },
+  {
+    "id": "atl19",
+    "num": 19,
+    "question": "Q19 : Quel est le Rôle Général des Formations d’Appui à la mobilité.",
+    "answer": "Permettre au Chef IA d’Accroître la Mobilité et la Réactivité des modules à engins lourds lors des phases de déplacement, transfert ou réarticulation.",
+    "tags": [
+      "ATL",
+      "Transport et Logistique",
+      "Transport",
+      "Logistique",
+      "PLGD"
+    ]
+  },
+  {
+    "id": "atl20",
+    "num": 20,
+    "question": "Q20 : Quelles sont les Missions des Formations de Transport.",
+    "answer": "Missions des Formations de Transport : (APPACHE)\n\n• Appui à la mobilité :\n- Acheminer des unités à engins lourds ;\n- Participer à l’évacuation des matériels.\n\n• Acheminement Logistique par voie terrestre.",
+    "tags": [
+      "ATL",
+      "Transport et Logistique",
+      "Transport",
+      "Logistique",
+      "PLGD"
+    ]
+  },
+  {
+    "id": "atl21",
+    "num": 21,
+    "question": "Q21 : Actions des formations de Transport lors de l’Acheminement Logistique par voie terrestre.",
+    "answer": "Actions lors de l’Acheminement Logistique par voie terrestre : (TAR-M-T)\n\n• Au profit de certaines Formations :\n- Transporter les CDI de certaines Unités (GAR en particulier) ;\n- Appui à la mobilité au profit des unités chenillées (Blindée, Artillerie, Génie…) ;\n- Renforcer une Formation pendant tout ou partie de ses mouvements.\n\n• Au sein d'un « Système logistique » :\n- Participer à la Manœuvre des ravitaillements par voie routière.\n\n• Au profit des Populations sinistrées :\n- Transporter et évacuer des populations sinistrées.",
+    "tags": [
+      "ATL",
+      "Transport et Logistique",
+      "Transport",
+      "Logistique",
+      "PLGD"
+    ]
+  },
+  {
+    "id": "atl22",
+    "num": 22,
+    "question": "Q22 : Définir la Plateforme Logistique de Groupage et de Distribution (PLGD).",
+    "answer": "Echelon intermédiaire entre les organes pourvoyeurs et les unités soutenues, la PLGD est une infrastructure de stockage temporaire, rattachée à un GT et conçue pour assurer le groupage des matériels en provenance des Etablissements de soutien et la distribution rationnelle au profit des formations bénéficiaires.",
+    "tags": [
+      "ATL",
+      "Transport et Logistique",
+      "Transport",
+      "Logistique",
+      "PLGD"
+    ]
+  },
+  {
+    "id": "atl23",
+    "num": 23,
+    "question": "Q23 : Que permet l’intégration de la PLGD à la chaine logistique.",
+    "answer": "L’intégration de la PLGD à la chaîne logistique permet de : (PREF)\n\n- Préserver le potentiel humain et autochars des unités soutenues ;\n- Rationaliser les coûts de transport ;\n- Eviter les contraintes liées au transport individuel et organique des appros ;\n- Faciliter la planification en amont des acheminements.",
+    "tags": [
+      "ATL",
+      "Transport et Logistique",
+      "Transport",
+      "Logistique",
+      "PLGD"
+    ]
+  },
+  {
+    "id": "atl24",
+    "num": 24,
+    "question": "Q24 : Quelles sont les Missions Particulières de l’ATL.",
+    "answer": "Missions Particulières de l’ATL : (FGSS)\n\n- Formation des conducteurs ;\n- Gardiennage des sites ONEE ;\n- Soutien aux Etats-Majors ;\n- Soutien à l’ONCF.",
+    "tags": [
+      "ATL",
+      "Transport et Logistique",
+      "Missions Particulières"
+    ]
+  },
+  {
+    "id": "atl25",
+    "num": 25,
+    "question": "Q25 : En quoi consiste la Formation des conducteurs pour l’ATL.",
+    "answer": "- Stages de formation et de recyclage des conducteurs ;\n- Formation des moniteurs de conduite automobile ;\n- Campagnes de sensibilisation sur la prévention et la sécurité routières.",
+    "tags": [
+      "ATL",
+      "Transport et Logistique",
+      "Missions Particulières"
+    ]
+  },
+  {
+    "id": "atl26",
+    "num": 26,
+    "question": "Q26 : En quoi consiste le Soutien aux Etats-Majors pour l’ATL.",
+    "answer": "Assurer au profit de l’EMG ainsi que des EM/ZS et ZE, des Secteurs, S/Secteurs et Places d’Armes :\n- Soutien Humain ;\n- Soutien Matériel ;\n- Soutien Administratif ;\n- Mise sur pied d’un Détachement Hors Rang ;\n- Garde et protection.",
+    "tags": [
+      "ATL",
+      "Transport et Logistique",
+      "Missions Particulières"
+    ]
+  },
+  {
+    "id": "atl27",
+    "num": 27,
+    "question": "Q27 : En quoi consiste le Soutien à l’ONCF pour l’ATL.",
+    "answer": "A travers un détachement de militaires de l’Arme auprès de l’ONCF. Il consiste à :\n\n• En temps normal :\n- Participer au Transport du phosphate, marchandises et voyageurs ;\n- Participer à la Sécurité de la circulation des trains.\n\n• En temps de crise :\n- Permettre à l’ONCF d’assurer le service minimum et la continuité du transport ferroviaire stratégique et la sécurité de la circulation des trains.",
+    "tags": [
+      "ATL",
+      "Transport et Logistique",
+      "Missions Particulières"
+    ]
+  },
+  {
+    "id": "atl28",
+    "num": 28,
+    "question": "Q28 : Quelles sont les Fonctions occupées par le personnel de l’ATL détaché auprès de l’ONCF.",
+    "answer": "- Conduite ;\n- Sécurité et circulation ;\n- Maintenance et manœuvre.",
+    "tags": [
+      "ATL",
+      "Transport et Logistique",
+      "Missions Particulières"
+    ]
+  },
+  {
+    "id": "atl29",
+    "num": 29,
+    "question": "Q29 : Quel est le Cadre d’emploi de l’ATL.",
+    "answer": "Les formations de transport peuvent être employées soit :\n- En Unités constituées pour remplir des missions délimitées dans le temps et dans l'espace ;\n- En Intégrant un système logistique assurant le soutien acheminement à un échelon déterminé.",
+    "tags": [
+      "ATL",
+      "Transport et Logistique",
+      "Emploi",
+      "Caractéristiques"
+    ]
+  },
+  {
+    "id": "atl30",
+    "num": 30,
+    "question": "Q30 : Quelles sont les Contraintes d’emploi des formations de l’ATL.",
+    "answer": "- Soutien nécessaire au MEC et aux Ravitaillements de leurs moyens ;\n- Temps indispensable au repos du personnel et à la remise en état du matériel.",
+    "tags": [
+      "ATL",
+      "Transport et Logistique",
+      "Emploi",
+      "Caractéristiques"
+    ]
+  },
+  {
+    "id": "atl31",
+    "num": 31,
+    "question": "Q31 : Quelles sont les Caractéristiques de l’ATL.",
+    "answer": "• Souplesse d'emploi : unités dotées d'une grande autonomie d'action et peuvent facilement être adaptées à la nature de la mission ;\n\n• Fiabilité : véhicules tous chemins utilisables en tout temps et sur tous les itinéraires.",
+    "tags": [
+      "ATL",
+      "Transport et Logistique",
+      "Emploi",
+      "Caractéristiques"
+    ]
+  },
+  {
+    "id": "atl32",
+    "num": 32,
+    "question": "Q32 : Quels sont les Moyens transport qui peuvent être mis en œuvre par les formations de l’ATL.",
+    "answer": "- Véhicules banalisés (camions cargo) ;\n- Véhicules spécialisés (semi-remorques, porte-chars, autocars, camions citernes).\n\nB.\tMoyens et Possibilités",
+    "tags": [
+      "ATL",
+      "Transport et Logistique",
+      "Emploi",
+      "Caractéristiques"
+    ]
+  },
+  {
+    "id": "atl33",
+    "num": 33,
+    "question": "Q33 : Comment est Structurée l’ATL.",
+    "answer": "• Unités de Transport :\n- Groupes de Transport (GT) ;\n- Groupe Engin Lourd de Transport (GELT) ;\n- Groupe de Soutien du Transport (GST).\n\n• Unités de Soutien aux Etats-Majors :\n- Bataillon du Quartier Général (BQG) ;\n- Bataillon de soutien de Théâtre (BSTH) ;\n- Bataillon de Soutien Local (BSL) ;\n- Bataillon de Soutien de Secteur (BSS).\n\n• Unités de Formation :\n- Ecole Royale du Transport et de la Logistique (ERTL) ;\n- Centre de Formation des Conducteurs (CFC).",
+    "tags": [
+      "ATL",
+      "Transport et Logistique",
+      "Unités",
+      "Structures et Moyens"
+    ]
+  },
+  {
+    "id": "atl34",
+    "num": 34,
+    "question": "Q34 : Comment est structuré le GT.",
+    "answer": "Unité formant Corps et administrativement autonome, à vocation transport et circulation :\n\n- 01 Esc Commandement et Services (ECS) ;\n- 01 Esc Transport (ET) ;\n- 01 Esc Engins Lourds Transport (EELT) ;\n- 01 Esc Circulation Routière (ECR) ;\n- 01 Esc Transport Mixte ;\n- 01 CFQC ;\n- Des PLGD.",
+    "tags": [
+      "ATL",
+      "Transport et Logistique",
+      "Unités",
+      "Structures et Moyens"
+    ]
+  },
+  {
+    "id": "atl35",
+    "num": 35,
+    "question": "Q35 : Quels sont les Moyens et Possibilités du GT.",
+    "answer": "• Transport :\n- Fret : 780T de matériels divers et 1200 militaires.\n- Produits liquides : 360T de carburants et d'eau.\n- Par autocars : 1200 permissionnaires.\n\n• Appui à la mobilité (avec 28 Porte-chars) :\n- Une Bde Blindée en (04) rotations.\n- Un RRC ou Une Compagnie de Travaux du Génie en (02) rotations.\n- Un GAR en (01) rotation.\n\n• Circulation Routière (Escadron à 03 Pelotons de Circulation Routière) :\n- Appuyer les mouvements d'un GF sur une distance de 100 à 150 km.\n- Reconnaitre et signaler 120 à 160 km d'itinéraire en 2H.\n- Baliser 30 km d'itinéraire en 3H.\n- Fournir le support de 03 Postes de Régulation.\n- Mettre en œuvre une Ligne de Contrôle.\n- Participer à d’autres missions (Franchissements, Recueil, Sûreté).",
+    "tags": [
+      "ATL",
+      "Transport et Logistique",
+      "Unités",
+      "Structures et Moyens"
+    ]
+  },
+  {
+    "id": "atl36",
+    "num": 36,
+    "question": "Q36 : Comment est structuré le GELT.",
+    "answer": "Unité formant Corps et administrativement autonome à vocation appui à la mobilité :\n\n- 01 Esc Commandement et Services (ECS) ;\n- 01 Esc Transport (ET) ;\n- 03 Esc Engins Lourds Transport (EELT) ;\n- 01 Esc Circulation Routière (ECR) ;\n- 01 CFQC ;\n- Des PLGD.",
+    "tags": [
+      "ATL",
+      "Transport et Logistique",
+      "Unités",
+      "Structures et Moyens"
+    ]
+  },
+  {
+    "id": "atl37",
+    "num": 37,
+    "question": "Q37 : Quels sont les Moyens et Possibilités du GELT.",
+    "answer": "Le GELT peut assurer des missions similaires au GT, à l’exception du transport mixte. Pour l’appui à la mobilité, sa capacité est 3 fois plus importante :\n\n• Transport de Fret : Doté de 60 camions de 5T, il est capable de transporter 300T de matériels divers ou 1200 militaires.\n\n• Appui à la mobilité (avec 84 Porte-chars) :\n- Une Bde Blindée en (02) rotations ;\n- Un RRC, un GAR ou une Compagnie de Travaux du Génie en (01) rotation.",
+    "tags": [
+      "ATL",
+      "Transport et Logistique",
+      "Unités",
+      "Structures et Moyens"
+    ]
+  },
+  {
+    "id": "atl38",
+    "num": 38,
+    "question": "Q38 : Comment est structuré le GST.",
+    "answer": "Unité formant Corps et administrativement autonome, destinée à un soutien particulier :\n\n- 01 Escadron Commandement et Services (ECS) ;\n- 02 Escadrons Transport Adaptés (ETA) ;\n- 02 Escadrons Soutien Particulier (ESP).",
+    "tags": [
+      "ATL",
+      "Transport et Logistique",
+      "Unités",
+      "Structures et Moyens"
+    ]
+  },
+  {
+    "id": "atl39",
+    "num": 39,
+    "question": "Q39 : Quelles sont les Possibilités du GST.",
+    "answer": "Doté d’une panoplie de moyens (camions, autocars…), le GST peut assurer :\n\n- Soutien administratif et logistique du personnel en affectation particulière ;\n- Transport en réserve pour les missions particulières ;\n- Eventuellement, l’Accompagnement et Escorte des convois lors des missions particulières.",
+    "tags": [
+      "ATL",
+      "Transport et Logistique",
+      "Unités",
+      "Structures et Moyens"
+    ]
+  },
+  {
+    "id": "atl40",
+    "num": 40,
+    "question": "Q40 : Comment est structuré le BQG.",
+    "answer": "Chargé du soutien de l’EMG, le BQG est une unité formant Corps et administrativement autonome : (CHMTC-GSST)\n\n- 01 Cnie Commandement et Sces ;\n- 01 Cnie Hors Rang ;\n- 01 Cnie Musique ;\n- 01 Cnie Transport ;\n- 01 Cnie Casernement ;\n- 04 Cnies Garde Protection ;\n- 03 Cnies Soutien ;\n- Des Sces Techniques.",
+    "tags": [
+      "ATL",
+      "Transport et Logistique",
+      "Unités",
+      "Structures et Moyens"
+    ]
+  },
+  {
+    "id": "atl41",
+    "num": 41,
+    "question": "Q41 : Quels sont les Moyens et Possibilités du BQG.",
+    "answer": "Le BQG met à la disposition des Bureaux, Inspections et Directions de l'EMG les moyens humains et matériels nécessaires à l'exécution des missions assignées.",
+    "tags": [
+      "ATL",
+      "Transport et Logistique",
+      "Unités",
+      "Structures et Moyens"
+    ]
+  },
+  {
+    "id": "atl42",
+    "num": 42,
+    "question": "Q42 : Comment est structuré le BSTH.",
+    "answer": "Unité formant Corps et administrativement autonome :\n\n- 01 Dét Commandement et Services ;\n- 01 Dét Soutien de Secteur ;\n- 01 Dét Soutien de Place d'Armes ;\n- 01 Dét Soutien Cercle Mess Officiers ;\n- 03 Déts Protection et Garde.",
+    "tags": [
+      "ATL",
+      "Transport et Logistique",
+      "Unités",
+      "Structures et Moyens"
+    ]
+  },
+  {
+    "id": "atl43",
+    "num": 43,
+    "question": "Q43 : Quelles sont les Possibilités du BSTH.",
+    "answer": "Soutien des EM des Zones, et éventuellement des Secteurs et Places d’Armes en moyens humains et matériels nécessaires à l'exécution des missions assignées.",
+    "tags": [
+      "ATL",
+      "Transport et Logistique",
+      "Unités",
+      "Structures et Moyens"
+    ]
+  },
+  {
+    "id": "atl44",
+    "num": 44,
+    "question": "Q44 : Comment est structuré le BSS.",
+    "answer": "Unité formant Corps et administrativement autonome, il soutient les EM des Secteurs et des Places d’Armes. Il est organisé en :\n\n- 01 Dét Commandement et Services ;\n- 01 Dét Soutien de Secteur ;\n- 01 Dét Soutien de Place d'Armes ;\n- 01 Dét Soutien Cercle Mess Officiers ;\n- 01 Dét Protection et Garde.",
+    "tags": [
+      "ATL",
+      "Transport et Logistique",
+      "Unités",
+      "Structures et Moyens"
+    ]
+  },
+  {
+    "id": "atl45",
+    "num": 45,
+    "question": "Q45 : Comment est structuré le BSL.",
+    "answer": "Unité formant Corps et administrativement autonome :\n\n- 01 Dét Commandement et Services ;\n- 01 Dét Soutien de Place d’Armes ;\n- 01 Dét Soutien Cercle Mess officiers ;\n- 01 Dét Protection et Garde.",
+    "tags": [
+      "ATL",
+      "Transport et Logistique",
+      "Unités",
+      "Structures et Moyens"
+    ]
+  },
+  {
+    "id": "atl46",
+    "num": 46,
+    "question": "Q46 : Quelles sont les Possibilités du BSL.",
+    "answer": "Unité de Soutien des Places d'Armes et des EM des Secteurs, le BSL assure : (3S-PG)\n\n- Soutien humain et matériel du Cdt d’Armes Délégué ;\n- Soutien administratif ;\n- Participation aux missions de Secours des populations sinistrées ;\n- Missions de Police et de contrôle de la circulation militaire et accompagnement des convois ;\n- Gardiennage des sites majeurs de l’ONEE.",
+    "tags": [
+      "ATL",
+      "Transport et Logistique",
+      "Unités",
+      "Structures et Moyens"
+    ]
+  },
+  {
+    "id": "atl47",
+    "num": 47,
+    "question": "Q47 : Comment est structurée l’ERTL.",
+    "answer": "- 01 Grpt Commandement et Services ;\n- 01 Grpt Stagiaires Formation Arme ;\n- 01 Grpt Stagiaires Ecole Conduite et Prévention Routière ;\n- 01 Grpt Moyens Instruction ;\n- 01 Direction Formation ;\n- 01 Direction Etudes et Contrôle.",
+    "tags": [
+      "ATL",
+      "Transport et Logistique",
+      "Unités",
+      "Structures et Moyens"
+    ]
+  },
+  {
+    "id": "atl48",
+    "num": 48,
+    "question": "Q48 : Quelles sont les Missions de l’ERTL.",
+    "answer": "- Formation continue des cadres de l'Arme ;\n- Formation en conduite automobile, par l’organisation des stages ci-après :\n  • Officiers de Prévention et Sécurité Routières (OPSR) et d’éducateurs en PSR et auxiliaires ;\n  • Formation d’offs formateurs (Chef de Centre de Formation de Conduite) et moniteurs ;\n  • Formation des conducteurs toutes catégories confondues au profit des unités ZN ;\n  • Organisation des séminaires et des campagnes de Prévention et de Sécurité Routières.",
+    "tags": [
+      "ATL",
+      "Transport et Logistique",
+      "Unités",
+      "Structures et Moyens"
+    ]
+  },
+  {
+    "id": "atl49",
+    "num": 49,
+    "question": "Q49 : Comment est structuré le CFC.",
+    "answer": "- 01 Groupement Commandement et Services ;\n- 01 Peloton Ecole Conduite ;\n- 01 Peloton Conduite et Simulation ;\n- 01 Peloton Prévention et Sécurité Routières.",
+    "tags": [
+      "ATL",
+      "Transport et Logistique",
+      "Unités",
+      "Structures et Moyens"
+    ]
+  },
+  {
+    "id": "atl50",
+    "num": 50,
+    "question": "Q50 : Quelles sont les Missions du CFC.",
+    "answer": "Formation en conduite automobile par l’organisation des stages au profit des conducteurs toutes catégories confondues, au profit des Unités de la Zone Sud.",
+    "tags": [
+      "ATL",
+      "Transport et Logistique",
+      "Unités",
+      "Structures et Moyens"
+    ]
+  }
+]
